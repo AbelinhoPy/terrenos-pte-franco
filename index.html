@@ -1,0 +1,1626 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Terrenos Pte. Franco — Mapa Cadastral e Comparativo</title>
+  <meta name="description" content="Visualização cadastral, análise comparativa de terrenos e ofertas em Presidente Franco (rodada v11 / 2026).">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+/* ==========================================================================
+   Design System & Theme Tokens (Clean, Modern, Cadastral)
+   ========================================================================== */
+:root {
+  --bg-app: #f4f5f0;
+  --bg-card: #ffffff;
+  --bg-subtle: #eaece4;
+  --border-color: #d6dad0;
+  --border-focus: #1d6f42;
+
+  --text-main: #18201a;
+  --text-muted: #566159;
+  --text-light: #7c887f;
+
+  --alvo-a: #c2410c; /* Alvo A Laranja Queimado */
+  --alvo-b: #15803d; /* Alvo B Verde Floresta */
+
+  --river: #2563eb;
+  --power: #7e22ce;
+  --py07: #854d0e;
+  --road: #64748b;
+
+  --grp-A: #1d4ed8;
+  --grp-A2: #0284c7;
+  --grp-B: #b45309;
+  --grp-C: #7e22ce;
+  --grp-GL1: #0f766e;
+  --grp-GL5: #047857;
+  --grp-FORA: #64748b;
+  --grp-DESC: #dc2626;
+  --grp-SEMPRECO: #6b7280;
+
+  --tag-exact-bg: #dcfce7;
+  --tag-exact-fg: #15803d;
+  --tag-aprox-bg: #fef3c7;
+  --tag-aprox-fg: #b45309;
+  --tag-discard-bg: #fee2e2;
+  --tag-discard-fg: #b91c1c;
+  --tag-dup-bg: #e0f2fe;
+  --tag-dup-fg: #0369a1;
+
+  --font-sans: "Plus Jakarta Sans", "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.04);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-full: 9999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-app: #121613;
+    --bg-card: #1a201c;
+    --bg-subtle: #242c26;
+    --border-color: #333d36;
+    --border-focus: #4ade80;
+
+    --text-main: #f0f4f1;
+    --text-muted: #9aa89e;
+    --text-light: #6c7a70;
+
+    --alvo-a: #fb923c;
+    --alvo-b: #4ade80;
+
+    --river: #60a5fa;
+    --power: #c084fc;
+    --py07: #facc15;
+    --road: #94a3b8;
+
+    --grp-A: #60a5fa;
+    --grp-A2: #38bdf8;
+    --grp-B: #fbbf24;
+    --grp-C: #c084fc;
+    --grp-GL1: #2dd4bf;
+    --grp-GL5: #34d399;
+    --grp-FORA: #94a3b8;
+    --grp-DESC: #f87171;
+    --grp-SEMPRECO: #9ca3af;
+
+    --tag-exact-bg: #14532d;
+    --tag-exact-fg: #86efac;
+    --tag-aprox-bg: #78350f;
+    --tag-aprox-fg: #fde68a;
+    --tag-discard-bg: #7f1d1d;
+    --tag-discard-fg: #fca5a5;
+    --tag-dup-bg: #0c4a6e;
+    --tag-dup-fg: #7dd3fc;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg-app: #121613;
+  --bg-card: #1a201c;
+  --bg-subtle: #242c26;
+  --border-color: #333d36;
+  --border-focus: #4ade80;
+
+  --text-main: #f0f4f1;
+  --text-muted: #9aa89e;
+  --text-light: #6c7a70;
+
+  --alvo-a: #fb923c;
+  --alvo-b: #4ade80;
+
+  --river: #60a5fa;
+  --power: #c084fc;
+  --py07: #facc15;
+  --road: #94a3b8;
+
+  --grp-A: #60a5fa;
+  --grp-A2: #38bdf8;
+  --grp-B: #fbbf24;
+  --grp-C: #c084fc;
+  --grp-GL1: #2dd4bf;
+  --grp-GL5: #34d399;
+  --grp-FORA: #94a3b8;
+  --grp-DESC: #f87171;
+  --grp-SEMPRECO: #9ca3af;
+
+  --tag-exact-bg: #14532d;
+  --tag-exact-fg: #86efac;
+  --tag-aprox-bg: #78350f;
+  --tag-aprox-fg: #fde68a;
+  --tag-discard-bg: #7f1d1d;
+  --tag-discard-fg: #fca5a5;
+  --tag-dup-bg: #0c4a6e;
+  --tag-dup-fg: #7dd3fc;
+}
+
+/* Base Elements */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 0 16px 40px;
+  background: var(--bg-app);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Header & Stats Banner */
+header.app-header {
+  padding: 20px 0 16px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.header-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.header-title h1 {
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin: 4px 0 0;
+  letter-spacing: -0.02em;
+}
+
+.header-meta {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 6px 0 0;
+  max-width: 85ch;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* KPI Summary Cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: var(--shadow-sm);
+}
+
+.kpi-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.kpi-val {
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.kpi-sub {
+  font-size: 0.73rem;
+  color: var(--text-light);
+}
+
+/* Main Two-Column Layout */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+  gap: 18px;
+  margin-top: 18px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .layout { grid-template-columns: 1fr; }
+}
+
+/* Map Section (Sticky on Desktop) */
+.map-pane {
+  position: sticky;
+  top: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+}
+
+.map-toolbar {
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.map-toolbar .spacer { flex: 1; }
+
+.btn-group {
+  display: inline-flex;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.btn-group button {
+  border: none;
+  border-right: 1px solid var(--border-color);
+  border-radius: 0;
+}
+
+.btn-group button:last-child {
+  border-right: none;
+}
+
+button, .btn {
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-main);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+button:hover, .btn:hover {
+  background: var(--bg-subtle);
+  border-color: var(--text-muted);
+}
+
+button:focus-visible, .btn:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+button.active, button.on {
+  background: var(--text-main);
+  color: var(--bg-card);
+  border-color: var(--text-main);
+}
+
+/* SVG Interactive Map */
+svg#map {
+  display: block;
+  width: 100%;
+  height: min(60vh, 520px);
+  touch-action: none;
+  cursor: grab;
+  background: var(--bg-subtle);
+}
+
+svg#map.drag {
+  cursor: grabbing;
+}
+
+.mk {
+  cursor: pointer;
+  outline: none;
+}
+
+.mk circle, .mk path {
+  transition: transform 0.15s ease, stroke-width 0.15s ease;
+}
+
+.mk:hover circle {
+  filter: drop-shadow(0 0 3px rgba(0,0,0,0.4));
+}
+
+.mk:focus-visible circle {
+  stroke: #ffea00 !important;
+  stroke-width: 4px !important;
+}
+
+.mk.sel circle {
+  stroke: #ffff00 !important;
+  stroke-width: 3.5px !important;
+}
+
+/* Map Legend */
+.map-legend {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-card);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-line {
+  width: 16px;
+  height: 0;
+  border-top: 3px solid;
+  flex-shrink: 0;
+}
+
+.legend-dash {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px dashed #888;
+  flex-shrink: 0;
+}
+
+/* Detail Panel */
+.detail-panel {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-card);
+  min-height: 110px;
+}
+
+.detail-empty {
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+  gap: 8px;
+}
+
+.detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.detail-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.detail-badge-id {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.detail-metric {
+  background: var(--bg-subtle);
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.detail-metric-lbl {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.detail-metric-val {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.detail-alert {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alert-warn {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.alert-dup {
+  background: var(--tag-dup-bg);
+  color: var(--tag-dup-fg);
+  border: 1px solid #bae6fd;
+}
+
+.alert-discard {
+  background: var(--tag-discard-bg);
+  color: var(--tag-discard-fg);
+  border: 1px solid #fecaca;
+}
+
+.detail-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+/* Sidebar / Filters */
+.side-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.filter-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group label {
+  font-size: 0.73rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.form-group input, .form-group select {
+  font-family: inherit;
+  font-size: 0.84rem;
+  color: var(--text-main);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  min-width: 0;
+}
+
+.slider-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.slider-val {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--alvo-a);
+}
+
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.chip-lbl {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+
+.chip {
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
+  cursor: pointer;
+  background: var(--bg-card);
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.chip.on {
+  background: var(--text-main);
+  color: var(--bg-card);
+  border-color: var(--text-main);
+}
+
+.chip-count {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+/* Data Table */
+.table-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  max-height: 580px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  min-width: 740px;
+  text-align: left;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+th button.th-sort {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 8px 10px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+}
+
+th.r button.th-sort {
+  justify-content: flex-end;
+}
+
+th button.th-sort:hover {
+  background: var(--bg-subtle);
+  color: var(--text-main);
+}
+
+td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: top;
+}
+
+td.r { text-align: right; }
+
+tr {
+  outline: none;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+tr:hover td {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+tr:focus-visible td {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+tr.sel td {
+  background: rgba(194, 65, 12, 0.12) !important;
+}
+
+td a {
+  color: var(--river);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+td a:hover {
+  text-decoration: underline;
+}
+
+/* Custom Badges & Tags */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.tag.exact { background: var(--tag-exact-bg); color: var(--tag-exact-fg); }
+.tag.aprox { background: var(--tag-aprox-bg); color: var(--tag-aprox-fg); }
+.tag.discard { background: var(--tag-discard-bg); color: var(--tag-discard-fg); font-weight: 600; }
+.tag.dup { background: var(--tag-dup-bg); color: var(--tag-dup-fg); }
+.tag.warn { background: #fef3c7; color: #b45309; }
+
+.avaliacao-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+}
+
+.avaliacao-badge.acima { color: var(--alvo-a); border-color: var(--alvo-a); }
+.avaliacao-badge.abaixo { color: var(--alvo-b); border-color: var(--alvo-b); }
+
+.notice-box {
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-top">
+    <div>
+      <div class="brand-badge">LATTIS S.A. · Pesquisa Imobiliária Cadastral · Presidente Franco · 24/10/2026</div>
+      <div class="header-title">
+        <h1>Terrenos Pte. Franco — Mapa Cadastral e Comparativo</h1>
+      </div>
+      <p class="header-meta">
+        Ofertas recebidas (A: esquina 3.000 m² em Santo Domingo · B: 20.000 m² em San Isidro) e comparáveis da rodada v11. Câmbio oficial BCP 23/10: Gs 5.764,73/USD. Preços anunciados (oferta), não de fechamento.
+      </p>
+    </div>
+    <div class="header-actions">
+      <button type="button" id="theme-toggle" aria-label="Alternar modo escuro e claro" title="Alternar tema">🌗 Tema</button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="kpi-card">
+      <div class="kpi-title">Registros & Propriedades</div>
+      <div class="kpi-val"><span id="kpi-records" class="num">0</span> <span style="font-size:0.8rem; font-weight:500; color:var(--text-muted);">registros</span></div>
+      <div class="kpi-sub"><span id="kpi-unique" class="num">0</span> propriedades únicas visíveis</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">Pino Informado (Anúncio/Maps)</div>
+      <div class="kpi-val"><span id="kpi-exact" class="num">0</span> <span style="font-size:0.8rem; font-weight:500; color:var(--text-muted);">imóveis</span></div>
+      <div class="kpi-sub"><span id="kpi-exact-pct" class="num">0%</span> do total visível</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">Preço Médio USD/m²</div>
+      <div class="kpi-val">USD <span id="kpi-avg-price" class="num">0</span></div>
+      <div class="kpi-sub">Calculado sobre terrenos visíveis</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">Área Total Amostrada</div>
+      <div class="kpi-val"><span id="kpi-total-area" class="num">0</span> <span style="font-size:0.8rem; font-weight:500; color:var(--text-muted);">ha</span></div>
+      <div class="kpi-sub"><span id="kpi-m2-sum" class="num">0</span> m² somados</div>
+    </div>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- Map Pane -->
+  <section class="map-pane" aria-label="Mapa esquemático interativo">
+    <div class="map-toolbar">
+      <div class="btn-group">
+        <button type="button" id="v1" class="active">KM 8 Monday</button>
+        <button type="button" id="v2">Pte. Franco</button>
+        <button type="button" id="v3">Alto Paraná</button>
+      </div>
+      <button type="button" id="reset-view" title="Restabelecer visualização inicial">⟲ Resetar Vista</button>
+      <div class="spacer"></div>
+      <div class="btn-group">
+        <button type="button" id="zin" aria-label="Aproximar zoom" title="Aproximar zoom">+</button>
+        <button type="button" id="zout" aria-label="Afastar zoom" title="Afastar zoom">−</button>
+      </div>
+    </div>
+
+    <svg id="map" viewBox="0 0 100 100" role="region" aria-label="Mapa cartográfico esquemático de Presidente Franco com marcadores interativos"></svg>
+
+    <div class="map-legend">
+      <span class="legend-item"><span class="legend-dot" style="background:var(--alvo-a)"></span>Alvo A (esquina)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--alvo-b)"></span>Alvo B (gleba)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--grp-A)"></span>A comerciais ≤ 8.000 m²</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--grp-A2)"></span>A2 comerciais &gt; 8.000 m²</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--grp-B)"></span>B lotes</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--grp-C)"></span>C CDE</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--grp-GL1)"></span>Glebas 1–5 ha</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--grp-GL5)"></span>Glebas 5–20 ha</span>
+      <span class="legend-item"><span class="legend-line" style="border-color:var(--river)"></span>Rio Monday</span>
+      <span class="legend-item"><span class="legend-line" style="border-color:var(--power)"></span>Linha ANDE 220 kV</span>
+      <span class="legend-item"><span class="legend-line" style="border-color:var(--py07)"></span>Av. Monday / PY07</span>
+      <span class="legend-item"><span class="legend-dash"></span>Contorno tracejado = Posição aproximada (bairro/KM)</span>
+    </div>
+
+    <div class="detail-panel" id="detail" aria-live="polite">
+      <div class="detail-empty">
+        <span>📍 Selecione um terreno no mapa ou na tabela para visualizar a ficha técnica cadastral completa.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sidebar: Filters & Table -->
+  <section class="side-pane">
+    <div class="filter-card">
+      <div class="filter-grid">
+        <div class="form-group" style="grid-column: span 2;">
+          <label for="q">Busca Rápida</label>
+          <input type="search" id="q" placeholder="Buscar por ID, bairro, KM, portal, rua, referência...">
+        </div>
+        <div class="form-group">
+          <label for="serie">Série do Estudo</label>
+          <select id="serie">
+            <option value="">Todas as Séries</option>
+            <option value="alvo">Ofertas Alvo Recebidas</option>
+            <option value="A">Série A — Comerciais e Residenciais</option>
+            <option value="B">Série B — Glebas 1–20 ha</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="prec">Precisão Geográfica</label>
+          <select id="prec">
+            <option value="">Todas as posições</option>
+            <option value="ex">Pino informado no anúncio/Maps</option>
+            <option value="ap">Posição aproximada (bairro/KM)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="status-filter">Filtro de Status</label>
+          <select id="status-filter">
+            <option value="comparavel">Apenas Comparáveis (Padrão)</option>
+            <option value="todos">Todos (incluir descartados)</option>
+            <option value="descartado">Apenas Descartados com Motivo</option>
+            <option value="fora_do_eixo">Apenas Fora do Eixo</option>
+            <option value="sem_preco">Apenas Sem Preço Informado</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="slider-container">
+        <div class="slider-header">
+          <span style="font-size:0.75rem; font-weight:600; text-transform:uppercase; color:var(--text-muted);">USD/m² Máximo</span>
+          <span class="slider-val" id="maxv">(sem limite)</span>
+        </div>
+        <input type="range" id="max" min="0" max="1100" step="10" value="1100" aria-label="Preço máximo em USD por metro quadrado">
+      </div>
+
+      <div class="chips-row">
+        <span class="chip-lbl">Categorias:</span>
+        <button type="button" class="chip on" data-g="ALVO">Alvos <span class="chip-count" id="cnt-ALVO"></span></button>
+        <button type="button" class="chip on" data-g="A">A ≤8k <span class="chip-count" id="cnt-A"></span></button>
+        <button type="button" class="chip on" data-g="A2">A2 &gt;8k <span class="chip-count" id="cnt-A2"></span></button>
+        <button type="button" class="chip on" data-g="B">B lotes <span class="chip-count" id="cnt-B"></span></button>
+        <button type="button" class="chip" data-g="C">C CDE <span class="chip-count" id="cnt-C"></span></button>
+        <button type="button" class="chip on" data-g="GL1-5">Glebas 1–5 ha <span class="chip-count" id="cnt-GL1-5"></span></button>
+        <button type="button" class="chip on" data-g="GL5-20">Glebas 5–20 ha <span class="chip-count" id="cnt-GL5-20"></span></button>
+      </div>
+    </div>
+
+    <!-- Data Table Card -->
+    <div class="table-card">
+      <div class="table-wrapper">
+        <table id="t" aria-label="Tabela cadastral de terrenos em Presidente Franco">
+          <thead>
+            <tr>
+              <th data-k="id" aria-sort="none"><button type="button" class="th-sort">ID <span class="sort-icon"></span></button></th>
+              <th data-k="titulo" aria-sort="none"><button type="button" class="th-sort">Terreno / Especificação <span class="sort-icon"></span></button></th>
+              <th class="r" data-k="m2" aria-sort="none"><button type="button" class="th-sort">Área m² <span class="sort-icon"></span></button></th>
+              <th class="r" data-k="usdm2" aria-sort="ascending"><button type="button" class="th-sort">USD/m² <span class="sort-icon"> ↑</span></button></th>
+              <th class="r" data-k="dA" aria-sort="none"><button type="button" class="th-sort">Dist. A <span class="sort-icon"></span></button></th>
+              <th class="r" data-k="dB" aria-sort="none"><button type="button" class="th-sort">Dist. B <span class="sort-icon"></span></button></th>
+              <th data-k="prec" aria-sort="none"><button type="button" class="th-sort">Precisão <span class="sort-icon"></span></button></th>
+              <th>Ações / Links</th>
+            </tr>
+          </thead>
+          <tbody id="tb"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="notice-box">
+      <strong>Critérios Técnicos de Precisão:</strong> "Pino informado no anúncio/Maps" indica a coordenada fornecida diretamente pelo vendedor, corretor ou portal (InfoCasas, API Rodan, link direto Google Maps). Não constitui demarcação topográfica ou verificação cadastral oficial. "Posição aproximada" demarca o centro do bairro ou marco quilométrico mencionado no anúncio para situar a zona de valor. Geometrias de referência baseadas no OpenStreetMap. Base de dados: <span class="num">CANDIDATOS_TERRENOS_v11.1_PTEFRANCO_GEO_2026-10-24.csv</span>.
+    </div>
+  </section>
+</main>
+
+<script>
+// ==========================================================================
+// Embedded Normalized Dataset (96 records, 89 unique properties)
+// ==========================================================================
+const DATA = [{"id":"ALVO-A","serie":"alvo","grupo":"ALVO","portal":"Oferta recebida","ref":"A","titulo":"Esquina comercial 3.000 m² — B° Santo Domingo (KM 8 Monday), Pte. Franco","m2":3000,"preco_txt":"USD 265.000","usd":265000,"usdm2":88.3,"esquina":"sim","local":"Santo Domingo / sobre via asfaltada PY02↔Av. Monday; linha ANDE 220 kV a ~20 m","lat":-25.549375,"lon":-54.671965,"prec":"exata (link do Maps)","data":"21–24/10/2026","obs":"CARO — comparáveis sustentam USD 50–65/m² (150–195 mil); com servidão 110–150 mil","link":"https://maps.app.goo.gl/u49kXurkpFTfDqjP7","dA":0,"dB":3,"maps":"https://www.google.com/maps?q=-25.549375,-54.671965","maps_sat":"https://www.google.com/maps/@-25.549375,-54.671965,17z/data=!3m1!1e3","propId":"PROP-001","status":"comparavel"},{"id":"ALVO-B","serie":"alvo","grupo":"ALVO","portal":"Oferta recebida","ref":"B","titulo":"Gleba 20.000 m² — B° San Isidro, Pte. Franco","m2":20000,"preco_txt":"USD 140.000","usd":140000,"usdm2":7,"esquina":"","local":"San Isidro; Av. Monday/PY07 a 1,3 km; Rio Monday a 120–160 m","lat":-25.574118,"lon":-54.6837381,"prec":"exata (link do Maps)","data":"24/10/2026","obs":"BARATO em preço — condicionado à faixa de proteção do Monday e à cota de cheia","link":"https://maps.app.goo.gl/genUER7uZ8dG3neX9","dA":3,"dB":0,"maps":"https://www.google.com/maps?q=-25.574118,-54.683738","maps_sat":"https://www.google.com/maps/@-25.574118,-54.683738,17z/data=!3m1!1e3","propId":"PROP-002","status":"comparavel"},{"id":"PF-01","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"193470646","titulo":"4 terrenos juntos, Av. Colon, 2 cuadras Santuario Schoenstatt (centro PF)","m2":3000,"preco_txt":"USD 300.000","usd":300000,"usdm2":100,"esquina":"não informado","local":"Av. Colón / zona Área 5-centro","lat":-25.5423,"lon":-54.6293,"prec":"coordenada do anúncio","data":"2026-03-06","obs":"4 lotes juntos; zona residencial consolidada","link":"https://www.infocasas.com.py/terrenos-en-venta/193470646","dA":4.4,"dB":6.5,"maps":"https://www.google.com/maps?q=-25.542300,-54.629300","maps_sat":"https://www.google.com/maps/@-25.542300,-54.629300,17z/data=!3m1!1e3","propId":"PROP-003","status":"comparavel"},{"id":"PF-02","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"192641425","titulo":"Oportunidad de Inversión: 3100 m² en Pte Franco (1 cuadra Supercarretera, polideportivo)","m2":3100,"preco_txt":"USD 400.000","usd":400000,"usdm2":129,"esquina":"não informado","local":"1 cuadra da Supercarretera PY07, perto Polideportivo — 1 quadra da Supercarretera / Polideportivo (aprox.)","lat":-25.545,"lon":-54.628,"prec":"aproximada (por bairro/KM)","data":"2025-07-15 (atualizado 2026-08-21)","obs":"coordenada do anúncio é genérica","link":"https://www.infocasas.com.py/oportunidad-de-inversion-3100m-en-pte-franco/192641425","dA":4.4,"dB":6.5,"maps":"https://www.google.com/maps?q=-25.545000,-54.628000","maps_sat":"https://www.google.com/maps/@-25.545000,-54.628000,17z/data=!3m1!1e3","propId":"PROP-004","status":"comparavel"},{"id":"PF-03","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"193208400","titulo":"2.540 m² a 1 cuadra Av. Miguel Medina / Plaza 15 de Mayo / UPE","m2":2540,"preco_txt":"USD 500.000","usd":500000,"usdm2":196.9,"esquina":"não informado","local":"centro PF (UPE) — Av. Miguel Medina / UPE (aprox.)","lat":-25.553,"lon":-54.615,"prec":"aproximada (por bairro/KM)","data":"2025-12-16 (atualizado 2026-09-17)","obs":"frente 88 m","link":"https://www.infocasas.com.py/vendo-terreno-en-pdte-franco/193208400","dA":5.7,"dB":7.3,"maps":"https://www.google.com/maps?q=-25.553000,-54.615000","maps_sat":"https://www.google.com/maps/@-25.553000,-54.615000,17z/data=!3m1!1e3","propId":"PROP-005","status":"comparavel"},{"id":"PF-04","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"193130108","titulo":"Terreno comercial 2.400 m² (40×60) a metros del Puente de la Integración","m2":2400,"preco_txt":"USD 650.000","usd":650000,"usdm2":270.8,"esquina":"não","local":"zona Puente Integración — zona Puente de la Integración (aprox.)","lat":-25.588,"lon":-54.599,"prec":"aproximada (por bairro/KM)","data":"2025-11-24","obs":"40×60 m","link":"https://www.infocasas.com.py/terreno-venta-presidente-franco-paraguay/193130108","dA":8.5,"dB":8.6,"maps":"https://www.google.com/maps?q=-25.588000,-54.599000","maps_sat":"https://www.google.com/maps/@-25.588000,-54.599000,17z/data=!3m1!1e3","propId":"PROP-006","status":"comparavel"},{"id":"PF-05","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"194128266","titulo":"8 lotes juntos 3.887 m², km 4 Monday, a cuadras del Salto Monday","m2":3877,"preco_txt":"Gs 1.200,0 M","usd":208162,"usdm2":53.7,"esquina":"não informado","local":"km 4 Monday","lat":-25.5554,"lon":-54.6355,"prec":"coordenada do anúncio","data":"2026-08-18","obs":"8 lotes contíguos","link":"https://www.infocasas.com.py/vendo-importante-propiedad-en-alto-parana/194128266","dA":3.7,"dB":5.3,"maps":"https://www.google.com/maps?q=-25.555400,-54.635500","maps_sat":"https://www.google.com/maps/@-25.555400,-54.635500,17z/data=!3m1!1e3","propId":"PROP-007","discrepancia_area":"Título cita 3.887 m² vs. cadastro numérico 3.877 m² (diferença de 10 m²) — pendente de verificação","status":"comparavel"},{"id":"PF-06","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"192729804","titulo":"Lotes a cuadras del Salto Monday, San Sebastián (lotes 6-13) 3.399 m²","m2":3399,"preco_txt":"Gs 2.996,0 M","usd":519712,"usdm2":152.9,"esquina":"não informado","local":"San Sebastián / Salto Monday","lat":-25.5586,"lon":-54.6213,"prec":"coordenada do anúncio","data":"2025-08-08","obs":"8 lotes; Gs 2,996 bi","link":"https://www.infocasas.com.py/terreno/192729804","dA":5.2,"dB":6.5,"maps":"https://www.google.com/maps?q=-25.558600,-54.621300","maps_sat":"https://www.google.com/maps/@-25.558600,-54.621300,17z/data=!3m1!1e3","propId":"PROP-008","status":"comparavel"},{"id":"PF-07","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"192653666","titulo":"Terreno 5.000 m² cerca del Puente de la Integración, sobre asfalto","m2":5000,"preco_txt":"USD 220.000","usd":220000,"usdm2":44,"esquina":"não informado","local":"zona Puente Integración — zona Puente de la Integración (aprox.)","lat":-25.587,"lon":-54.6,"prec":"aproximada (por bairro/KM)","data":"2025-07-17 (atualizado 2026-07-03)","obs":"descrição ainda cita USD 275k (55/m²) – preço reduzido","link":"https://www.infocasas.com.py/terreno/192653666","dA":8.3,"dB":8.5,"maps":"https://www.google.com/maps?q=-25.587000,-54.600000","maps_sat":"https://www.google.com/maps/@-25.587000,-54.600000,17z/data=!3m1!1e3","propId":"PROP-009","status":"comparavel"},{"id":"PF-08","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"191207510","titulo":"5.000 m² barrio Santa Rosa (Tres Fronteras)","m2":5000,"preco_txt":"USD 400.000","usd":400000,"usdm2":80,"esquina":"não informado","local":"Santa Rosa / Tres Fronteras","lat":-25.5788,"lon":-54.6096,"prec":"coordenada do anúncio","data":"2024-08-07 (atualizado 2026-04-27)","obs":"frente 100 m","link":"https://www.infocasas.com.py/terreno/191207510","dA":7.1,"dB":7.5,"maps":"https://www.google.com/maps?q=-25.578800,-54.609600","maps_sat":"https://www.google.com/maps/@-25.578800,-54.609600,17z/data=!3m1!1e3","propId":"PROP-010","status":"comparavel"},{"id":"PF-09","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"193103816","titulo":"6.032 m² frente al Río Paraná, 150 m da Ruta B. Caballero, 1,9 km do Puente","m2":6032,"preco_txt":"USD 190.000","usd":190000,"usdm2":31.5,"esquina":"não","local":"San Roque / rio Paraná","lat":-25.562,"lon":-54.5996,"prec":"coordenada do anúncio","data":"2025-11-16 (3 anúncios iguais; Clasipar 2844339 = USD 200k)","obs":"preço caiu de 350k p/ 190-200k","link":"https://www.infocasas.com.py/terreno/193103816","dA":7.4,"dB":8.5,"maps":"https://www.google.com/maps?q=-25.562000,-54.599600","maps_sat":"https://www.google.com/maps/@-25.562000,-54.599600,17z/data=!3m1!1e3","propId":"PROP-011","status":"comparavel"},{"id":"PF-10","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"191749312","titulo":"5.768 m² esquina a 600 m do 2º puente, camino al Puerto de Balsas","m2":5768,"preco_txt":"USD 800.000","usd":800000,"usdm2":138.7,"esquina":"sim","local":"Tres Fronteras","lat":-25.602,"lon":-54.6069,"prec":"coordenada do anúncio","data":"2024-12-02 (atualizado 2026-09-17)","obs":"3 anúncios iguais","link":"https://www.infocasas.com.py/terreno/191749312","dA":8.8,"dB":8.3,"maps":"https://www.google.com/maps?q=-25.602000,-54.606900","maps_sat":"https://www.google.com/maps/@-25.602000,-54.606900,17z/data=!3m1!1e3","propId":"PROP-012","status":"comparavel"},{"id":"PF-11","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"191193136","titulo":"6.947 m² sobre Supercarretera, 30 m frente, 3 calles","m2":6947,"preco_txt":"USD 1.260.000","usd":1260000,"usdm2":181.4,"esquina":"sim (3 ruas)","local":"Supercarretera PY07 centro PF","lat":-25.5464,"lon":-54.6314,"prec":"coordenada do anúncio","data":"2024-08-03 (atualizado 2026-04-27)","obs":"","link":"https://www.infocasas.com.py/terreno/191193136","dA":4.1,"dB":6.1,"maps":"https://www.google.com/maps?q=-25.546400,-54.631400","maps_sat":"https://www.google.com/maps/@-25.546400,-54.631400,17z/data=!3m1!1e3","propId":"PROP-013","status":"comparavel"},{"id":"PF-12","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"192720119","titulo":"4.700 m² esquina frente al Polideportivo, 50 m sobre Supercarretera","m2":4700,"preco_txt":"USD 1.800.000","usd":1800000,"usdm2":383,"esquina":"sim","local":"Supercarretera PY07 / Polideportivo — Supercarretera / Polideportivo (aprox.)","lat":-25.544,"lon":-54.63,"prec":"aproximada (por bairro/KM)","data":"2025-08-05 (atualizado 2026-02-06)","obs":"m² corrigido da descrição","link":"https://www.infocasas.com.py/terreno/192720119","dA":4.3,"dB":6.3,"maps":"https://www.google.com/maps?q=-25.544000,-54.630000","maps_sat":"https://www.google.com/maps/@-25.544000,-54.630000,17z/data=!3m1!1e3","propId":"PROP-014","status":"comparavel"},{"id":"PF-13","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"193911589","titulo":"2.191 m² Tres Fronteras 48×46 m, minutos do puente","m2":2191,"preco_txt":"Gs 750,0 M","usd":130101,"usdm2":59.4,"esquina":"não informado","local":"Tres Fronteras — Tres Fronteras (aprox.)","lat":-25.5854,"lon":-54.6059,"prec":"aproximada (por bairro/KM)","data":"2026-06-24","obs":"Clasipar/Infocasas 189099044 mesmo lote a USD 150k","link":"https://www.infocasas.com.py/terreno/193911589","dA":7.7,"dB":7.9,"maps":"https://www.google.com/maps?q=-25.585400,-54.605900","maps_sat":"https://www.google.com/maps/@-25.585400,-54.605900,17z/data=!3m1!1e3","propId":"PROP-015","status":"comparavel"},{"id":"PF-14","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"194143489","titulo":"1.245 m² San Rafael, 25 m frente, calle cementada Taracio Viveros","m2":1245,"preco_txt":"Gs 600,0 M","usd":104081,"usdm2":83.6,"esquina":"não","local":"San Rafael","lat":-25.571,"lon":-54.614,"prec":"coordenada do anúncio","data":"2026-08-21","obs":"","link":"https://www.infocasas.com.py/terreno/194143489","dA":6.3,"dB":7,"maps":"https://www.google.com/maps?q=-25.571000,-54.614000","maps_sat":"https://www.google.com/maps/@-25.571000,-54.614000,17z/data=!3m1!1e3","propId":"PROP-016","status":"comparavel"},{"id":"PF-15","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"194054391","titulo":"1.105 m² calle a calle sobre Av. Amambay, 450 m da Av. Monday (camino a Cedrales)","m2":1105,"preco_txt":"USD 120.000","usd":120000,"usdm2":108.6,"esquina":"não (calle a calle)","local":"Av. Amambay / km 4-5 Monday","lat":-25.5481,"lon":-54.6293,"prec":"coordenada do anúncio","data":"2025-10-06 (3 anúncios iguais até 2026-09-23)","obs":"17 m frente","link":"https://www.infocasas.com.py/amplio-terreno-de-calle-a-calle-camino-a-cedrales/194054391","dA":4.3,"dB":6.2,"maps":"https://www.google.com/maps?q=-25.548100,-54.629300","maps_sat":"https://www.google.com/maps/@-25.548100,-54.629300,17z/data=!3m1!1e3","propId":"PROP-017","status":"comparavel"},{"id":"PF-16","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"193717178","titulo":"3 terrenos 1.080 m² frente al Área 5 / Jardines de Haifa, a metros da Supercarretera","m2":1080,"preco_txt":"USD 180.000","usd":180000,"usdm2":166.7,"esquina":"não informado","local":"Área 5 — Área 5 (aprox.)","lat":-25.551,"lon":-54.618,"prec":"aproximada (por bairro/KM)","data":"2026-05-07","obs":"3 lotes 10×30","link":"https://www.infocasas.com.py/terreno/193717178","dA":5.4,"dB":7.1,"maps":"https://www.google.com/maps?q=-25.551000,-54.618000","maps_sat":"https://www.google.com/maps/@-25.551000,-54.618000,17z/data=!3m1!1e3","propId":"PROP-018","status":"comparavel"},{"id":"PF-17","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"193160452","titulo":"1.140 m² Área 3, detrás da Av. Campo Vía","m2":1140,"preco_txt":"USD 500.000","usd":500000,"usdm2":438.6,"esquina":"não informado","local":"Área 3 (CDE/PF limite)","lat":-25.5414,"lon":-54.6259,"prec":"coordenada do anúncio","data":"2025-12-02","obs":"","link":"https://www.infocasas.com.py/terreno/193160452","dA":4.7,"dB":6.8,"maps":"https://www.google.com/maps?q=-25.541400,-54.625900","maps_sat":"https://www.google.com/maps/@-25.541400,-54.625900,17z/data=!3m1!1e3","propId":"PROP-019","status":"comparavel"},{"id":"PF-18","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Infocasas","ref":"193514790","titulo":"1.000 m² Presidente Franco (zona B. Caballero/Tres Fronteras)","m2":1000,"preco_txt":"Gs 450,0 M","usd":78061,"usdm2":78.1,"esquina":"não informado","local":"Tres Fronteras","lat":-25.5748,"lon":-54.6082,"prec":"coordenada do anúncio","data":"2026-03-16","obs":"","link":"https://www.infocasas.com.py/terreno/193514790","dA":7,"dB":7.6,"maps":"https://www.google.com/maps?q=-25.574800,-54.608200","maps_sat":"https://www.google.com/maps/@-25.574800,-54.608200,17z/data=!3m1!1e3","propId":"PROP-020","status":"comparavel"},{"id":"PF-19","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Clasipar","ref":"2137911","titulo":"9 terrenos juntos 3.621 m² a 20 m da Supercarretera, ao lado do Motel Oasis","m2":3621,"preco_txt":"USD 700.000","usd":700000,"usdm2":193.3,"esquina":"não informado","local":"Supercarretera PY07 — Supercarretera PY07 (aprox.)","lat":-25.542,"lon":-54.632,"prec":"aproximada (por bairro/KM)","data":"renovado 21/10/2026","obs":"","link":"https://clasipar.paraguay.com/inmuebles/terrenos/terreno-en-venta-en-alto-parana-2137911","dA":4.1,"dB":6.3,"maps":"https://www.google.com/maps?q=-25.542000,-54.632000","maps_sat":"https://www.google.com/maps/@-25.542000,-54.632000,17z/data=!3m1!1e3","propId":"PROP-021","status":"comparavel"},{"id":"PF-20","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Clasipar","ref":"2942969","titulo":"1.273 m² sobre ruta (camino a Cedrales/Santa Rita), 28,3 m frente, km 4 San Miguel","m2":1273,"preco_txt":"USD 400.000","usd":400000,"usdm2":314.2,"esquina":"não","local":"Av. Monday km 4 – San Miguel — Av. Monday KM 4 / San Miguel (aprox.)","lat":-25.556,"lon":-54.64,"prec":"aproximada (por bairro/KM)","data":"15/10/2026","obs":"anunciante informa 314 USD/m²","link":"https://clasipar.paraguay.com/inmuebles/terrenos/en-venta-terreno-en-pte-franco-alto-parana-2942969","dA":3.3,"dB":4.8,"maps":"https://www.google.com/maps?q=-25.556000,-54.640000","maps_sat":"https://www.google.com/maps/@-25.556000,-54.640000,17z/data=!3m1!1e3","propId":"PROP-022","status":"comparavel"},{"id":"PF-21","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Clasipar","ref":"2161709","titulo":"4 inmuebles juntos 1.630 m² esquina, km 5-6 PF, 6 cuadras da Av. Monday (amurallado, quincho)","m2":1630,"preco_txt":"Gs 590,0 M","usd":102347,"usdm2":62.8,"esquina":"sim","local":"km 5-6 Monday — KM 5-6 Monday, 6 quadras da Av. Monday (aprox.)","lat":-25.561,"lon":-54.65,"prec":"aproximada (por bairro/KM)","data":"renovado 21/10/2026","obs":"tem benfeitorias (casa quinta)","link":"https://clasipar.paraguay.com/inmuebles/terrenos/vendo-4-inmuebles-en-km-5-pdte-franco-a-6-cuadras-de-la-avda-monday-2161709","dA":2.6,"dB":3.7,"maps":"https://www.google.com/maps?q=-25.561000,-54.650000","maps_sat":"https://www.google.com/maps/@-25.561000,-54.650000,17z/data=!3m1!1e3","propId":"PROP-023","status":"comparavel"},{"id":"PF-22","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Clasipar","ref":"2369777","titulo":"4 terrenos juntos esquina 1.587,84 m², km 9 Monday, 100 m do rio, 500 m do asfalto","m2":1588,"preco_txt":"Gs 310,0 M","usd":53775,"usdm2":33.9,"esquina":"sim","local":"km 9 Monday — KM 9 Monday, 100 m do rio (aprox.)","lat":-25.574,"lon":-54.678,"prec":"aproximada (por bairro/KM)","data":"renovado 24/10/2026","obs":"conversável","link":"https://clasipar.paraguay.com/inmuebles/terrenos/4-terrenos-juntos-en-ciudad-presidente-franco-km-9-monday-a-100-metros-del-rio-imperdibl-2369777","dA":2.8,"dB":0.6,"maps":"https://www.google.com/maps?q=-25.574000,-54.678000","maps_sat":"https://www.google.com/maps/@-25.574000,-54.678000,17z/data=!3m1!1e3","propId":"PROP-024","status":"comparavel"},{"id":"PF-23","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Clasipar","ref":"1483066","titulo":"2.000 m² (20×100) sobre Av. Monday km 9, camino a Cedrales, sobre asfalto, com casa","m2":2000,"preco_txt":"Gs 800,0 M","usd":138775,"usdm2":69.4,"esquina":"não","local":"Av. Monday km 9 — sobre a Av. Monday KM 9 (aprox.)","lat":-25.568,"lon":-54.668,"prec":"aproximada (por bairro/KM)","data":"publicado 19/02/2020 (ainda listado)","obs":"anúncio antigo – preço pode estar defasado","link":"https://clasipar.paraguay.com/inmuebles/terrenos/km9-monday-pte-franco-av-monday-2000-m2-terreno-pinversion-camino-a-cedrales-sasfalt-1483066","dA":2.1,"dB":1.7,"maps":"https://www.google.com/maps?q=-25.568000,-54.668000","maps_sat":"https://www.google.com/maps/@-25.568000,-54.668000,17z/data=!3m1!1e3","propId":"PROP-025","status":"comparavel"},{"id":"PF-24","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A","portal":"Clasipar","ref":"1530092","titulo":"5.000 m² a metros do 2º puente (Integración)","m2":5000,"preco_txt":"USD 1.200.000","usd":1200000,"usdm2":240,"esquina":"não informado","local":"Puente Integración — a metros do Puente de la Integración (aprox.)","lat":-25.5875,"lon":-54.5985,"prec":"aproximada (por bairro/KM)","data":"renovado 19/10/2026","obs":"My House inmobiliaria","link":"https://clasipar.paraguay.com/inmuebles/terrenos/vendo-hermoso-terreno-de-5000-m2-a-mts-del-segundo-puente-1530092","dA":8.5,"dB":8.7,"maps":"https://www.google.com/maps?q=-25.587500,-54.598500","maps_sat":"https://www.google.com/maps/@-25.587500,-54.598500,17z/data=!3m1!1e3","propId":"PROP-026","status":"comparavel"},{"id":"PF-25","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A2","portal":"RE/MAX","ref":"143050095-10","titulo":"Terreno comercial 11.815 m² km 8 Monday, San Isidro, 400 m da Av. Monday (232 m frente)","m2":11815,"preco_txt":"USD 220.000","usd":220000,"usdm2":18.6,"esquina":"não informado","local":"km 8 Monday – San Isidro — San Isidro, KM 8 Av. Monday, 400 m da avenida (aprox.)","lat":-25.5685,"lon":-54.6705,"prec":"aproximada (por bairro/KM)","data":"ativo 24/10/2026","obs":"fora da faixa de área, mas é o vizinho mais próximo do alvo em zona · Reclassificado formalmente de A para A2 (área 11.815 m² excede ≤ 8.000 m²; mesmo imóvel que B-07)","link":"https://www.remax.com.py/en/listings/land/for-sale/presidente-franco/km-8-avda-monday-km-8-avda-monday/143050095-10","dA":2.1,"dB":1.5,"maps":"https://www.google.com/maps?q=-25.568500,-54.670500","maps_sat":"https://www.google.com/maps/@-25.568500,-54.670500,17z/data=!3m1!1e3","sameAs":"B-07","propId":"PROP-027","grupoOriginal":"A","status":"comparavel"},{"id":"PF-26","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A2","portal":"Clasipar","ref":"1220614","titulo":"8.600 m² esquina detrás da Petrobras do Área 5, 100 m da Supercarretera","m2":8600,"preco_txt":"USD 350.000","usd":350000,"usdm2":40.7,"esquina":"sim","local":"Área 5 — Área 5, 100 m da Supercarretera (aprox.)","lat":-25.55,"lon":-54.62,"prec":"aproximada (por bairro/KM)","data":"renovado 19/10/2026","obs":"pouco acima da faixa","link":"https://clasipar.paraguay.com/inmuebles/terrenos/vendo-8600-m2-a-100-m-de-la-super-carretera-1220614","dA":5.2,"dB":6.9,"maps":"https://www.google.com/maps?q=-25.550000,-54.620000","maps_sat":"https://www.google.com/maps/@-25.550000,-54.620000,17z/data=!3m1!1e3","propId":"PROP-028","status":"comparavel"},{"id":"PF-27","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A2","portal":"Clasipar","ref":"2923164","titulo":"9.945 m² km 3 Monday sobre asfalto (calle Saltos del Monday), com casa a demolir","m2":9945,"preco_txt":"USD 750.000","usd":750000,"usdm2":75.4,"esquina":"não","local":"km 3 Monday — KM 3 Monday, calle Saltos del Monday (aprox.)","lat":-25.555,"lon":-54.63,"prec":"aproximada (por bairro/KM)","data":"renovado 21/10/2026","obs":"anunciante informa 75 USD/m²","link":"https://clasipar.paraguay.com/inmuebles/terrenos/vendo-terreno-9945-m2-en-km-3-monday-a-3-min-de-pdte-franco-ideal-ptodo-2923164","dA":4.3,"dB":5.8,"maps":"https://www.google.com/maps?q=-25.555000,-54.630000","maps_sat":"https://www.google.com/maps/@-25.555000,-54.630000,17z/data=!3m1!1e3","propId":"PROP-029","status":"comparavel"},{"id":"PF-28","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A2","portal":"Clasipar","ref":"1730500","titulo":"11.242 m² sobre asfalto perto da Escuela Saltos del Monday","m2":11242,"preco_txt":"USD 320.000","usd":320000,"usdm2":28.5,"esquina":"não informado","local":"Saltos del Monday — perto da Escuela Saltos del Monday (aprox.)","lat":-25.5455,"lon":-54.6745,"prec":"aproximada (por bairro/KM)","data":"renovado 21/10/2026","obs":"","link":"https://clasipar.paraguay.com/inmuebles/terrenos/venta-de-hermoso-terreno-sobre-asfalto-de-1-hectarea-320000-usd-1730500","dA":0.5,"dB":3.3,"maps":"https://www.google.com/maps?q=-25.545500,-54.674500","maps_sat":"https://www.google.com/maps/@-25.545500,-54.674500,17z/data=!3m1!1e3","sameAs":"B-09","propId":"PROP-030","status":"comparavel"},{"id":"PF-29","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A2","portal":"Clasipar","ref":"2239930","titulo":"1 ha km 6 Monday (barrio residencial)","m2":10000,"preco_txt":"USD 400.000","usd":400000,"usdm2":40,"esquina":"não informado","local":"km 6 Monday — KM 6 Monday (aprox.)","lat":-25.559,"lon":-54.654,"prec":"aproximada (por bairro/KM)","data":"renovado 15/10/2026","obs":"","link":"https://clasipar.paraguay.com/inmuebles/terrenos/vendo-una-hectarea-en-km-6-monday-cod-1850-2239930","dA":2.1,"dB":3.4,"maps":"https://www.google.com/maps?q=-25.559000,-54.654000","maps_sat":"https://www.google.com/maps/@-25.559000,-54.654000,17z/data=!3m1!1e3","sameAs":"B-12","propId":"PROP-031","status":"comparavel"},{"id":"PF-30","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A2","portal":"Infocasas","ref":"192798349","titulo":"9.825 m² zona Monday, 2 cuadras do asfalto (zona baixa)","m2":9825,"preco_txt":"USD 285.000","usd":285000,"usdm2":29,"esquina":"não informado","local":"zona Monday","lat":-25.5626,"lon":-54.6243,"prec":"coordenada do anúncio","data":"2025-08-27","obs":"outro anúncio igual a USD 350k","link":"https://www.infocasas.com.py/terreno/192798349","dA":5,"dB":6.1,"maps":"https://www.google.com/maps?q=-25.562600,-54.624300","maps_sat":"https://www.google.com/maps/@-25.562600,-54.624300,17z/data=!3m1!1e3","sameAs":"B-08","propId":"PROP-032","status":"comparavel"},{"id":"PF-31","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A2","portal":"Infocasas","ref":"190969294","titulo":"11.215 m² sobre asfalto, 198 m frente, 3 calles, 1.100 m da Av. Monday","m2":11215,"preco_txt":"USD 330.000","usd":330000,"usdm2":29.4,"esquina":"sim (3 ruas)","local":"Saltos del Monday","lat":-25.5623,"lon":-54.6471,"prec":"coordenada do anúncio","data":"2024-04-17 (atualizado 2026-04-27)","obs":"","link":"https://www.infocasas.com.py/terreno/190969294","dA":2.9,"dB":3.9,"maps":"https://www.google.com/maps?q=-25.562300,-54.647100","maps_sat":"https://www.google.com/maps/@-25.562300,-54.647100,17z/data=!3m1!1e3","sameAs":"B-10","propId":"PROP-033","status":"comparavel"},{"id":"PF-32","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A2","portal":"Infocasas","ref":"194309018","titulo":"10.000 m² esquina frente a doble avenida, Barrio San Miguel, calle empedrada","m2":10000,"preco_txt":"USD 1.300.000","usd":1300000,"usdm2":130,"esquina":"sim","local":"San Miguel","lat":-25.5546,"lon":-54.6469,"prec":"coordenada do anúncio","data":"2026-09-24 (4 anúncios iguais)","obs":"","link":"https://www.infocasas.com.py/vendo-terreno-de-10000-m-en-presidente-franco-barrio-san-miguel/194309018","dA":2.6,"dB":4.3,"maps":"https://www.google.com/maps?q=-25.554600,-54.646900","maps_sat":"https://www.google.com/maps/@-25.554600,-54.646900,17z/data=!3m1!1e3","propId":"PROP-034","status":"comparavel"},{"id":"PF-33","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A2","portal":"Infocasas","ref":"193947090","titulo":"6,25 ha sobre Av. Monday km 9, perto ponte rio Monday / Corredor Metropolitano","m2":62500,"preco_txt":"USD 3.000.000","usd":3000000,"usdm2":48,"esquina":"não","local":"Av. Monday km 9","lat":-25.5582,"lon":-54.6422,"prec":"coordenada do anúncio","data":"2026-07-02 (outros a USD 3,3 M)","obs":"","link":"https://www.infocasas.com.py/en-venta-propiedad-de-625-has-sobre-av-monday-pdte-franco/193947090","dA":3.1,"dB":4.5,"maps":"https://www.google.com/maps?q=-25.558200,-54.642200","maps_sat":"https://www.google.com/maps/@-25.558200,-54.642200,17z/data=!3m1!1e3","sameAs":"B-13","propId":"PROP-035","status":"comparavel"},{"id":"PF-34","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A2","portal":"Infocasas","ref":"194091046","titulo":"27.404 m² frente Av. Bernardino Caballero, 1,5 km ANNP, 5 km Puente","m2":27404,"preco_txt":"USD 2.750.000","usd":2750000,"usdm2":100.4,"esquina":"não (calle a calle)","local":"B. Caballero / porto — Av. Bernardino Caballero / ANNP (aprox.)","lat":-25.572,"lon":-54.6035,"prec":"aproximada (por bairro/KM)","data":"2026-08-08 (≈10 anúncios iguais)","obs":"","link":"https://www.infocasas.com.py/terreno-en-presidente-franco-alto-parana/194091046","dA":7.3,"dB":8.1,"maps":"https://www.google.com/maps?q=-25.572000,-54.603500","maps_sat":"https://www.google.com/maps/@-25.572000,-54.603500,17z/data=!3m1!1e3","propId":"PROP-036","status":"comparavel"},{"id":"PF-35","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A2","portal":"Infocasas","ref":"192395495","titulo":"19.220 m² calle a calle sobre avenida ao Puente de la Integración, 100×192","m2":19220,"preco_txt":"USD 1.500.000","usd":1500000,"usdm2":78,"esquina":"não (calle a calle)","local":"Tres Fronteras / B. Caballero","lat":-25.576,"lon":-54.6018,"prec":"coordenada do anúncio","data":"2025-05-15 (outros a 1,75-1,95 M)","obs":"","link":"https://www.infocasas.com.py/terreno-venta-paraguay-alto-parana-presidente-franco/192395495","dA":7.6,"dB":8.2,"maps":"https://www.google.com/maps?q=-25.576000,-54.601800","maps_sat":"https://www.google.com/maps/@-25.576000,-54.601800,17z/data=!3m1!1e3","propId":"PROP-037","status":"comparavel"},{"id":"PF-36","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"A2","portal":"Infocasas","ref":"193012013","titulo":"12 ha a 3 km do Corredor Metropolitano","m2":120000,"preco_txt":"USD 2.000.000","usd":2000000,"usdm2":16.7,"esquina":"não informado","local":"Corredor Metropolitano","lat":-25.5341,"lon":-54.6886,"prec":"coordenada do anúncio","data":"2025-10-22 (outro anúncio a 1,1 M)","obs":"","link":"https://www.infocasas.com.py/terreno/193012013","dA":2.4,"dB":4.5,"maps":"https://www.google.com/maps?q=-25.534100,-54.688600","maps_sat":"https://www.google.com/maps/@-25.534100,-54.688600,17z/data=!3m1!1e3","sameAs":"B-06","propId":"PROP-038","status":"comparavel"},{"id":"PF-37","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Rodan","ref":"fracción 345","titulo":"Puesta del Sol – lote 360 m² disponível (preço contado Gs 149.760.000; 155 cuotas de Gs 1.600.000)","m2":360,"preco_txt":"Gs 149,8 M","usd":25979,"usdm2":72.2,"esquina":"n/d","local":"km 8 Monday – Santo Domingo","lat":-25.5562,"lon":-54.6786,"prec":"coordenada do anúncio","data":"ativo 24/10/2026","obs":"7 lotes disponíveis; lotes vendidos historicamente a mediana USD 37/m²","link":"https://rodan.com.py/propiedades/fraccion/345/lotes","dA":1,"dB":2.1,"maps":"https://www.google.com/maps?q=-25.556200,-54.678600","maps_sat":"https://www.google.com/maps/@-25.556200,-54.678600,17z/data=!3m1!1e3","propId":"PROP-039","status":"comparavel"},{"id":"PF-38","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Rodan","ref":"fracción 357","titulo":"Sierra Mariana – lote 360 m² (Gs 149,76–168,48 M contado)","m2":360,"preco_txt":"Gs 149,8 M","usd":25979,"usdm2":72.2,"esquina":"n/d","local":"km 8 Monday","lat":-25.5566,"lon":-54.6824,"prec":"coordenada do anúncio","data":"ativo 24/10/2026","obs":"6 disponíveis","link":"https://rodan.com.py/propiedades/fraccion/357/lotes","dA":1.3,"dB":2,"maps":"https://www.google.com/maps?q=-25.556600,-54.682400","maps_sat":"https://www.google.com/maps/@-25.556600,-54.682400,17z/data=!3m1!1e3","propId":"PROP-040","status":"comparavel"},{"id":"PF-39","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Rodan","ref":"fracción 364","titulo":"Las Magnolias – lote 367 m² (Gs 139,2 M contado)","m2":367,"preco_txt":"Gs 139,2 M","usd":24147,"usdm2":65.8,"esquina":"n/d","local":"km 9 Monday","lat":-25.5463,"lon":-54.6965,"prec":"coordenada do anúncio","data":"ativo 24/10/2026","obs":"1 disponível","link":"https://rodan.com.py/propiedades/fraccion/364/lotes","dA":2.5,"dB":3.3,"maps":"https://www.google.com/maps?q=-25.546300,-54.696500","maps_sat":"https://www.google.com/maps/@-25.546300,-54.696500,17z/data=!3m1!1e3","propId":"PROP-041","status":"comparavel"},{"id":"PF-40","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Rodan","ref":"fracción 329","titulo":"Vista al Salto – lote 360 m² (Gs 475 M contado)","m2":360,"preco_txt":"Gs 475,0 M","usd":82398,"usdm2":228.9,"esquina":"n/d","local":"km 3 Monday","lat":-25.5584,"lon":-54.6261,"prec":"coordenada do anúncio","data":"ativo 24/10/2026","obs":"4 disponíveis","link":"https://rodan.com.py/propiedades/fraccion/329/lotes","dA":4.7,"dB":6,"maps":"https://www.google.com/maps?q=-25.558400,-54.626100","maps_sat":"https://www.google.com/maps/@-25.558400,-54.626100,17z/data=!3m1!1e3","propId":"PROP-042","status":"comparavel"},{"id":"PF-41","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Clasipar","ref":"2968631","titulo":"2 terrenos Barrio Santo Domingo, 12×31 cada (744 m²), 6 cuadras Av. Monday, 2 cuadras Tape Tujá","m2":744,"preco_txt":"Gs 180,0 M","usd":31224,"usdm2":42,"esquina":"não","local":"Santo Domingo — B° Santo Domingo, 6 quadras da Av. Monday (aprox.)","lat":-25.5495,"lon":-54.6765,"prec":"aproximada (por bairro/KM)","data":"08/10/2026","obs":"benchmark direto do bairro","link":"https://clasipar.paraguay.com/inmuebles/terrenos/vendo-dos-terrenos-2968631","dA":0.5,"dB":2.8,"maps":"https://www.google.com/maps?q=-25.549500,-54.676500","maps_sat":"https://www.google.com/maps/@-25.549500,-54.676500,17z/data=!3m1!1e3","propId":"PROP-043","status":"comparavel"},{"id":"PF-42","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"194256010","titulo":"Santo Domingo – Fracción Monte Cristo, 383 m²","m2":383,"preco_txt":"Gs 260,0 M","usd":45102,"usdm2":117.8,"esquina":"não informado","local":"Santo Domingo","lat":-25.5419,"lon":-54.6698,"prec":"coordenada do anúncio","data":"2026-09-15","obs":"benchmark direto do bairro","link":"https://www.infocasas.com.py/invierte-en-tu-futuro-en-santo-domingo/194256010","dA":0.9,"dB":3.8,"maps":"https://www.google.com/maps?q=-25.541900,-54.669800","maps_sat":"https://www.google.com/maps/@-25.541900,-54.669800,17z/data=!3m1!1e3","propId":"PROP-044","status":"comparavel"},{"id":"PF-43","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"193062493","titulo":"558 m² km 7 Santa Clara (plano)","m2":558,"preco_txt":"Gs 150,0 M","usd":26020,"usdm2":46.6,"esquina":"não informado","local":"km 7 Monday – Santa Clara","lat":-25.5492,"lon":-54.6668,"prec":"coordenada do anúncio","data":"2025-11-05","obs":"","link":"https://www.infocasas.com.py/vendo-terreno-plano-en-presidente-franco/193062493","dA":0.5,"dB":3.3,"maps":"https://www.google.com/maps?q=-25.549200,-54.666800","maps_sat":"https://www.google.com/maps/@-25.549200,-54.666800,17z/data=!3m1!1e3","propId":"PROP-045","status":"comparavel"},{"id":"PF-44","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"191000976","titulo":"360 m² km 7 Monday sobre asfalto – 130 cuotas de Gs 2.100.000 (≈Gs 273 M financiado)","m2":360,"preco_txt":"Gs 273,0 M","usd":47357,"usdm2":131.5,"esquina":"n/d","local":"km 7 Monday","lat":-25.5524,"lon":-54.6606,"prec":"coordenada do anúncio","data":"2024-05-17","obs":"valor financiado total","link":"https://www.infocasas.com.py/terreno/191000976","dA":1.2,"dB":3.3,"maps":"https://www.google.com/maps?q=-25.552400,-54.660600","maps_sat":"https://www.google.com/maps/@-25.552400,-54.660600,17z/data=!3m1!1e3","propId":"PROP-046","status":"comparavel"},{"id":"PF-45","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"194216348","titulo":"369 m² Barrio Santa Inés, calle Luis Bruno","m2":369,"preco_txt":"Gs 170,0 M","usd":29490,"usdm2":79.9,"esquina":"não","local":"Santa Inés","lat":-25.5698,"lon":-54.6513,"prec":"coordenada do anúncio","data":"2026-09-06","obs":"","link":"https://www.infocasas.com.py/terreno/194216348","dA":3.1,"dB":3.3,"maps":"https://www.google.com/maps?q=-25.569800,-54.651300","maps_sat":"https://www.google.com/maps/@-25.569800,-54.651300,17z/data=!3m1!1e3","propId":"PROP-047","status":"comparavel"},{"id":"PF-46","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"190988168","titulo":"360 m² km 6,5 Santa Inés, Fracción Itami, 1.200 m da Av. Monday","m2":360,"preco_txt":"Gs 110,0 M","usd":19082,"usdm2":53,"esquina":"não","local":"km 6,5 Monday – Santa Inés","lat":-25.5636,"lon":-54.6492,"prec":"coordenada do anúncio","data":"2024-05-08 (renovado 2026-10-22; Clasipar 2942691)","obs":"","link":"https://www.infocasas.com.py/terreno/190988168","dA":2.8,"dB":3.7,"maps":"https://www.google.com/maps?q=-25.563600,-54.649200","maps_sat":"https://www.google.com/maps/@-25.563600,-54.649200,17z/data=!3m1!1e3","propId":"PROP-048","status":"comparavel"},{"id":"PF-47","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"194169166","titulo":"2 lotes esquina 720 m² km 9 Monday","m2":720,"preco_txt":"Gs 260,0 M","usd":45102,"usdm2":62.6,"esquina":"sim","local":"km 9 Monday","lat":-25.5711,"lon":-54.674,"prec":"coordenada do anúncio","data":"2026-08-26 (3 anúncios iguais)","obs":"","link":"https://www.infocasas.com.py/terreno/194169166","dA":2.4,"dB":1,"maps":"https://www.google.com/maps?q=-25.571100,-54.674000","maps_sat":"https://www.google.com/maps/@-25.571100,-54.674000,17z/data=!3m1!1e3","propId":"PROP-049","status":"comparavel"},{"id":"PF-48","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Clasipar","ref":"2381212","titulo":"2 lotes titulados 24×30 = 720 m² km 9 Monday, 100 m do rio","m2":720,"preco_txt":"Gs 170,0 M","usd":29490,"usdm2":41,"esquina":"não","local":"km 9 Monday — KM 9 Monday, 100 m do rio (aprox.)","lat":-25.5745,"lon":-54.6775,"prec":"aproximada (por bairro/KM)","data":"renovado 24/10/2026","obs":"","link":"https://clasipar.paraguay.com/inmuebles/terrenos/terrenos-titulados-en-franco-a-pasos-del-rio-monday-imperdible-2381212","dA":2.8,"dB":0.6,"maps":"https://www.google.com/maps?q=-25.574500,-54.677500","maps_sat":"https://www.google.com/maps/@-25.574500,-54.677500,17z/data=!3m1!1e3","propId":"PROP-050","status":"comparavel"},{"id":"PF-49","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"194140778","titulo":"362 m² km 5 Monday, 300 m da calle Amambay, empedrado","m2":362.4,"preco_txt":"Gs 227,0 M","usd":39377,"usdm2":108.7,"esquina":"não","local":"km 5 Monday — KM 5 Monday / calle Amambay (aprox.)","lat":-25.556,"lon":-54.645,"prec":"aproximada (por bairro/KM)","data":"2026-08-20","obs":"","link":"https://www.infocasas.com.py/terreno/194140778","dA":2.8,"dB":4.4,"maps":"https://www.google.com/maps?q=-25.556000,-54.645000","maps_sat":"https://www.google.com/maps/@-25.556000,-54.645000,17z/data=!3m1!1e3","propId":"PROP-051","status":"comparavel"},{"id":"PF-50","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Clasipar","ref":"2019570","titulo":"2 lotes 12×30 (720 m²) detrás do Super 6, sobre empedrado","m2":720,"preco_txt":"Gs 450,0 M","usd":78061,"usdm2":108.4,"esquina":"não","local":"centro PF / Super 6 — centro Pte. Franco / Super 6 (aprox.)","lat":-25.5595,"lon":-54.612,"prec":"aproximada (por bairro/KM)","data":"renovado 19/10/2026","obs":"","link":"https://clasipar.paraguay.com/inmuebles/terrenos/vendo-22-terrenos-juntos-detras-del-super-6-de-presidente-franco-2019570","dA":6.1,"dB":7.4,"maps":"https://www.google.com/maps?q=-25.559500,-54.612000","maps_sat":"https://www.google.com/maps/@-25.559500,-54.612000,17z/data=!3m1!1e3","propId":"PROP-052","status":"comparavel"},{"id":"PF-51","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Clasipar","ref":"1865524","titulo":"622,5 m² frente ao Área 5 (doble avenida), a cuadras da UPE","m2":622.5,"preco_txt":"USD 75.000","usd":75000,"usdm2":120.5,"esquina":"não (2 frentes)","local":"Área 5 — frente ao Área 5 / UPE (aprox.)","lat":-25.5525,"lon":-54.617,"prec":"aproximada (por bairro/KM)","data":"16/09/2026","obs":"","link":"https://clasipar.paraguay.com/inmuebles/terrenos/vendo-lote-de-62250m2-en-frente-al-area-5-pdte-franco-a-cuadras-de-la-upe-1865524","dA":5.5,"dB":7.1,"maps":"https://www.google.com/maps?q=-25.552500,-54.617000","maps_sat":"https://www.google.com/maps/@-25.552500,-54.617000,17z/data=!3m1!1e3","propId":"PROP-053","status":"comparavel"},{"id":"PF-52","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"194308897","titulo":"360 m² Santo Tomás, empedrado, frente complexo UPE","m2":360,"preco_txt":"Gs 330,0 M","usd":57245,"usdm2":159,"esquina":"não","local":"Santo Tomás / UPE","lat":-25.5465,"lon":-54.6274,"prec":"coordenada do anúncio","data":"2026-09-24 (5 anúncios iguais)","obs":"","link":"https://www.infocasas.com.py/terreno/194308897","dA":4.5,"dB":6.4,"maps":"https://www.google.com/maps?q=-25.546500,-54.627400","maps_sat":"https://www.google.com/maps/@-25.546500,-54.627400,17z/data=!3m1!1e3","propId":"PROP-054","status":"comparavel"},{"id":"PF-53","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"193175070","titulo":"362 m² esquina San Sebastián, a metros da Av. Saltos del Monday (RE/MAX)","m2":362,"preco_txt":"Gs 330,0 M","usd":57245,"usdm2":158.1,"esquina":"sim","local":"San Sebastián","lat":-25.5555,"lon":-54.62,"prec":"coordenada do anúncio","data":"2025-12-05","obs":"","link":"https://www.infocasas.com.py/terreno-en-esquina-presidente-franco/193175070","dA":5.3,"dB":6.7,"maps":"https://www.google.com/maps?q=-25.555500,-54.620000","maps_sat":"https://www.google.com/maps/@-25.555500,-54.620000,17z/data=!3m1!1e3","propId":"PROP-055","status":"comparavel"},{"id":"PF-54","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"194170037","titulo":"581 m² sobre Av. Monday, Barrio San Antonio (14,8×41)","m2":581,"preco_txt":"Gs 850,0 M","usd":147448,"usdm2":253.8,"esquina":"não","local":"Av. Monday – San Antonio","lat":-25.5542,"lon":-54.6448,"prec":"coordenada do anúncio","data":"2026-08-27 (4 anúncios iguais)","obs":"","link":"https://www.infocasas.com.py/vendo-terreno-en-avenida-monday-presidente-franco/194170037","dA":2.8,"dB":4.5,"maps":"https://www.google.com/maps?q=-25.554200,-54.644800","maps_sat":"https://www.google.com/maps/@-25.554200,-54.644800,17z/data=!3m1!1e3","propId":"PROP-056","status":"comparavel"},{"id":"PF-55","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"194341065","titulo":"600 m² Área 5 sobre doble Av. Monday entre Aguaray e Miguel Medina","m2":600,"preco_txt":"USD 120.000","usd":120000,"usdm2":200,"esquina":"não","local":"Área 5 / Av. Monday — Área 5 sobre Av. Monday (aprox.)","lat":-25.5535,"lon":-54.6165,"prec":"aproximada (por bairro/KM)","data":"2026-10-01","obs":"","link":"https://www.infocasas.com.py/terreno/194341065","dA":5.6,"dB":7.1,"maps":"https://www.google.com/maps?q=-25.553500,-54.616500","maps_sat":"https://www.google.com/maps/@-25.553500,-54.616500,17z/data=!3m1!1e3","propId":"PROP-057","status":"comparavel"},{"id":"PF-56","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"194176822","titulo":"487 m² esquina San Antonio, detrás do Hospital Distrital","m2":487,"preco_txt":"Gs 690,0 M","usd":119693,"usdm2":245.8,"esquina":"sim","local":"San Antonio","lat":-25.5602,"lon":-54.6138,"prec":"coordenada do anúncio","data":"2026-08-28","obs":"","link":"https://www.infocasas.com.py/terreno/194176822","dA":6,"dB":7.2,"maps":"https://www.google.com/maps?q=-25.560200,-54.613800","maps_sat":"https://www.google.com/maps/@-25.560200,-54.613800,17z/data=!3m1!1e3","propId":"PROP-058","status":"comparavel"},{"id":"PF-57","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"194254363","titulo":"638 m² esquina sobre Doble Av. Guaraní, 1 cuadra da Supercarretera","m2":638,"preco_txt":"USD 268.000","usd":268000,"usdm2":420.1,"esquina":"sim","local":"Av. Guaraní / Supercarretera — Av. Guaraní, 1 quadra da Supercarretera (aprox.)","lat":-25.549,"lon":-54.6265,"prec":"aproximada (por bairro/KM)","data":"2026-09-14","obs":"","link":"https://www.infocasas.com.py/terreno/194254363","dA":4.6,"dB":6.4,"maps":"https://www.google.com/maps?q=-25.549000,-54.626500","maps_sat":"https://www.google.com/maps/@-25.549000,-54.626500,17z/data=!3m1!1e3","propId":"PROP-059","status":"comparavel"},{"id":"PF-58","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"191272660","titulo":"400 m² (10×40) sobre asfalto Av. B. Caballero, perto do Puente","m2":400,"preco_txt":"USD 120.000","usd":120000,"usdm2":300,"esquina":"não","local":"B. Caballero / Puente","lat":-25.5711,"lon":-54.6031,"prec":"coordenada do anúncio","data":"2024-08-28 (renovado 2026-10-22)","obs":"","link":"https://www.infocasas.com.py/vendo-terreno-cerca-al-puente-de-la-integracion-por-120000-dolares/191272660","dA":7.3,"dB":8.1,"maps":"https://www.google.com/maps?q=-25.571100,-54.603100","maps_sat":"https://www.google.com/maps/@-25.571100,-54.603100,17z/data=!3m1!1e3","propId":"PROP-060","status":"comparavel"},{"id":"PF-59","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"192881625","titulo":"520 m² (13×40) a 50 m do Hito Tres Fronteras, doble avenida","m2":520,"preco_txt":"USD 300.000","usd":300000,"usdm2":576.9,"esquina":"não (2 frentes)","local":"Tres Fronteras","lat":-25.5876,"lon":-54.6004,"prec":"coordenada do anúncio","data":"2025-09-17","obs":"","link":"https://www.infocasas.com.py/vendo-terreno-en-presidente-franco-tres-fronteras/192881625","dA":8.3,"dB":8.5,"maps":"https://www.google.com/maps?q=-25.587600,-54.600400","maps_sat":"https://www.google.com/maps/@-25.587600,-54.600400,17z/data=!3m1!1e3","propId":"PROP-061","status":"comparavel"},{"id":"PF-60","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"B","portal":"Infocasas","ref":"194314867","titulo":"360 m² comercial sobre Supercarretera PY07, Área 5","m2":360,"preco_txt":"Gs 1.310,0 M","usd":227244,"usdm2":631.2,"esquina":"não","local":"Supercarretera / Área 5","lat":-25.5475,"lon":-54.6168,"prec":"coordenada do anúncio","data":"2026-09-24","obs":"","link":"https://www.infocasas.com.py/terreno/194314867","dA":5.5,"dB":7.3,"maps":"https://www.google.com/maps?q=-25.547500,-54.616800","maps_sat":"https://www.google.com/maps/@-25.547500,-54.616800,17z/data=!3m1!1e3","propId":"PROP-062","status":"comparavel"},{"id":"PF-61","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"C","portal":"Infocasas","ref":"194098168","titulo":"360 m² (12×30) km 7 Ciudad Nueva, CDE","m2":360,"preco_txt":"USD 35.000","usd":35000,"usdm2":97.2,"esquina":"não","local":"CDE km 7 Ciudad Nueva — KM 7 Ciudad Nueva CDE (aprox.)","lat":-25.5187,"lon":-54.6701,"prec":"aproximada (por bairro/KM)","data":"2026-08-11","obs":"","link":"https://www.infocasas.com.py/terreno/194098168","dA":3.4,"dB":6.3,"maps":"https://www.google.com/maps?q=-25.518700,-54.670100","maps_sat":"https://www.google.com/maps/@-25.518700,-54.670100,17z/data=!3m1!1e3","propId":"PROP-063","status":"comparavel"},{"id":"PF-62","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"C","portal":"Infocasas","ref":"194348759","titulo":"360 m² km 7 Don Bosco, CDE","m2":360,"preco_txt":"USD 34.990","usd":34990,"usdm2":97.2,"esquina":"não","local":"CDE km 7 Don Bosco — Don Bosco CDE (aprox.)","lat":-25.4647,"lon":-54.6464,"prec":"aproximada (por bairro/KM)","data":"2026-10-02","obs":"","link":"https://www.infocasas.com.py/terreno/194348759","dA":9.8,"dB":12.7,"maps":"https://www.google.com/maps?q=-25.464700,-54.646400","maps_sat":"https://www.google.com/maps/@-25.464700,-54.646400,17z/data=!3m1!1e3","propId":"PROP-064","status":"comparavel"},{"id":"PF-63","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"C","portal":"Infocasas","ref":"193858385","titulo":"360 m² km 7 Acaray, Av. Rep. de Colombia","m2":360,"preco_txt":"Gs 330,0 M","usd":57245,"usdm2":159,"esquina":"não","local":"CDE km 7 Acaray — KM 7 Acaray CDE (aprox.)","lat":-25.495,"lon":-54.67,"prec":"aproximada (por bairro/KM)","data":"2026-06-09","obs":"","link":"https://www.infocasas.com.py/terreno/193858385","dA":6,"dB":8.9,"maps":"https://www.google.com/maps?q=-25.495000,-54.670000","maps_sat":"https://www.google.com/maps/@-25.495000,-54.670000,17z/data=!3m1!1e3","propId":"PROP-065","status":"comparavel"},{"id":"PF-64","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"C","portal":"MercadoProp","ref":"km7-DonBosco","titulo":"2 terrenos contíguos esquina km 7 Don Bosco, Barrio Carolina (≈740 m²), empedrado","m2":740,"preco_txt":"Gs 300,0 M","usd":52041,"usdm2":70.3,"esquina":"sim","local":"CDE km 7 Don Bosco — KM 7 Don Bosco / Carolina CDE (aprox.)","lat":-25.49,"lon":-54.66,"prec":"aproximada (por bairro/KM)","data":"ativo 24/10/2026","obs":"dado só do snippet da lista","link":"https://www.mercadoprop.net/py/terrenos-venta-ciudad_del_este-alto_parana","dA":6.7,"dB":9.7,"maps":"https://www.google.com/maps?q=-25.490000,-54.660000","maps_sat":"https://www.google.com/maps/@-25.490000,-54.660000,17z/data=!3m1!1e3","propId":"PROP-066","status":"comparavel"},{"id":"PF-65","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"C","portal":"Infocasas","ref":"190988152","titulo":"463 m² esquina km 5 Barrio San Isidro CDE","m2":463,"preco_txt":"USD 80.000","usd":80000,"usdm2":172.8,"esquina":"sim","local":"CDE km 5 San Isidro — KM 5 San Isidro CDE (aprox.)","lat":-25.5084,"lon":-54.6512,"prec":"aproximada (por bairro/KM)","data":"2024-05-07","obs":"","link":"https://www.infocasas.com.py/terreno/190988152","dA":5,"dB":8,"maps":"https://www.google.com/maps?q=-25.508400,-54.651200","maps_sat":"https://www.google.com/maps/@-25.508400,-54.651200,17z/data=!3m1!1e3","propId":"PROP-067","status":"comparavel"},{"id":"PF-66","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"C","portal":"Infocasas","ref":"190990371","titulo":"4.050 m² km 6 Barrio Villa Fany CDE","m2":4050,"preco_txt":"USD 185.000","usd":185000,"usdm2":45.7,"esquina":"não informado","local":"CDE km 6 — KM 6 Villa Fany CDE (aprox.)","lat":-25.506,"lon":-54.66,"prec":"aproximada (por bairro/KM)","data":"2024-05-09","obs":"frente 39 m","link":"https://www.infocasas.com.py/terreno/190990371","dA":5,"dB":7.9,"maps":"https://www.google.com/maps?q=-25.506000,-54.660000","maps_sat":"https://www.google.com/maps/@-25.506000,-54.660000,17z/data=!3m1!1e3","propId":"PROP-068","status":"comparavel"},{"id":"PF-67","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"C","portal":"Infocasas","ref":"194353688","titulo":"887 m² km 7 paralelo à Av. Perú","m2":887,"preco_txt":"USD 300.000","usd":300000,"usdm2":338.2,"esquina":"não informado","local":"CDE km 7 / Av. Perú — KM 7 / Av. Perú CDE (aprox.)","lat":-25.4937,"lon":-54.6616,"prec":"aproximada (por bairro/KM)","data":"2026-10-03","obs":"","link":"https://www.infocasas.com.py/terreno/194353688","dA":6.3,"dB":9.2,"maps":"https://www.google.com/maps?q=-25.493700,-54.661600","maps_sat":"https://www.google.com/maps/@-25.493700,-54.661600,17z/data=!3m1!1e3","propId":"PROP-069","status":"comparavel"},{"id":"PF-68","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"C","portal":"Infocasas","ref":"193412341","titulo":"6 terrenos juntos 2.160 m² sobre Av. Bicentenario – La Blanca","m2":2160,"preco_txt":"USD 405.000","usd":405000,"usdm2":187.5,"esquina":"não","local":"CDE Av. Bicentenario — Av. Bicentenario / La Blanca CDE (aprox.)","lat":-25.4936,"lon":-54.6494,"prec":"aproximada (por bairro/KM)","data":"2026-02-19","obs":"","link":"https://www.infocasas.com.py/terreno/193412341","dA":6.6,"dB":9.6,"maps":"https://www.google.com/maps?q=-25.493600,-54.649400","maps_sat":"https://www.google.com/maps/@-25.493600,-54.649400,17z/data=!3m1!1e3","propId":"PROP-070","status":"comparavel"},{"id":"PF-69","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"C","portal":"Infocasas","ref":"194073559","titulo":"735 m² Barrio Boquerón 2 / Área 1","m2":735,"preco_txt":"USD 200.000","usd":200000,"usdm2":272.1,"esquina":"não informado","local":"CDE Área 1 — Boquerón / Área 1 CDE (aprox.)","lat":-25.5124,"lon":-54.612,"prec":"aproximada (por bairro/KM)","data":"2026-08-04","obs":"frente 17 m","link":"https://www.infocasas.com.py/terreno/194073559","dA":7.3,"dB":9.9,"maps":"https://www.google.com/maps?q=-25.512400,-54.612000","maps_sat":"https://www.google.com/maps/@-25.512400,-54.612000,17z/data=!3m1!1e3","propId":"PROP-071","status":"comparavel"},{"id":"PF-70","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"C","portal":"Infocasas","ref":"194067199","titulo":"1.768 m² Área 1, a pasos del centro","m2":1768,"preco_txt":"USD 650.000","usd":650000,"usdm2":367.6,"esquina":"não informado","local":"CDE Área 1 — Área 1 CDE (aprox.)","lat":-25.513,"lon":-54.615,"prec":"aproximada (por bairro/KM)","data":"2026-08-03","obs":"frente 35 m","link":"https://www.infocasas.com.py/terreno/194067199","dA":7,"dB":9.7,"maps":"https://www.google.com/maps?q=-25.513000,-54.615000","maps_sat":"https://www.google.com/maps/@-25.513000,-54.615000,17z/data=!3m1!1e3","propId":"PROP-072","status":"comparavel"},{"id":"PF-71","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"C","portal":"MercadoProp","ref":"Area2-484","titulo":"484 m² Barrio Área 2, frente ao club Área 2","m2":484,"preco_txt":"USD 135.000","usd":135000,"usdm2":278.9,"esquina":"não","local":"CDE Área 2 — Área 2 CDE (aprox.)","lat":-25.5311,"lon":-54.6041,"prec":"aproximada (por bairro/KM)","data":"ativo 24/10/2026","obs":"dado só do snippet da lista","link":"https://www.mercadoprop.net/py/terrenos-venta-ciudad_del_este-alto_parana","dA":7.1,"dB":9.3,"maps":"https://www.google.com/maps?q=-25.531100,-54.604100","maps_sat":"https://www.google.com/maps/@-25.531100,-54.604100,17z/data=!3m1!1e3","propId":"PROP-073","status":"comparavel"},{"id":"PF-72","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"C","portal":"MercadoProp","ref":"km6-ruta","titulo":"1.174 m² (27×43,5) sobre ruta km 6 CDE","m2":1174,"preco_txt":"USD 1.200.000","usd":1200000,"usdm2":1022.1,"esquina":"não","local":"CDE km 6 sobre Ruta PY02 — sobre a PY02 KM 6 CDE (aprox.)","lat":-25.511,"lon":-54.662,"prec":"aproximada (por bairro/KM)","data":"ativo 24/10/2026","obs":"dado só do snippet da lista","link":"https://www.mercadoprop.net/py/terrenos-venta-ciudad_del_este-alto_parana","dA":4.4,"dB":7.3,"maps":"https://www.google.com/maps?q=-25.511000,-54.662000","maps_sat":"https://www.google.com/maps/@-25.511000,-54.662000,17z/data=!3m1!1e3","propId":"PROP-074","status":"comparavel"},{"id":"PF-73","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"C","portal":"Infocasas","ref":"193650308","titulo":"7.905 m² sobre calle km 9 Acaray CDE","m2":7905,"preco_txt":"USD 130.000","usd":130000,"usdm2":16.4,"esquina":"não","local":"CDE km 9 Acaray — KM 9 Acaray CDE (aprox.)","lat":-25.5,"lon":-54.69,"prec":"aproximada (por bairro/KM)","data":"2026-04-18","obs":"","link":"https://www.infocasas.com.py/terreno/193650308","dA":5.8,"dB":8.3,"maps":"https://www.google.com/maps?q=-25.500000,-54.690000","maps_sat":"https://www.google.com/maps/@-25.500000,-54.690000,17z/data=!3m1!1e3","propId":"PROP-075","status":"comparavel"},{"id":"PF-74","serie":"A — comerciais/residenciais (≤ 8.000 m² + contexto)","grupo":"C","portal":"Infocasas","ref":"193609414","titulo":"2.300 m² sobre calle km 12 Acaray CDE","m2":2300,"preco_txt":"USD 80.000","usd":80000,"usdm2":34.8,"esquina":"não","local":"CDE km 12 Acaray — KM 12 Acaray CDE (aprox.)","lat":-25.5,"lon":-54.72,"prec":"aproximada (por bairro/KM)","data":"2026-04-09","obs":"","link":"https://www.infocasas.com.py/terreno/193609414","dA":7.3,"dB":9,"maps":"https://www.google.com/maps?q=-25.500000,-54.720000","maps_sat":"https://www.google.com/maps/@-25.500000,-54.720000,17z/data=!3m1!1e3","propId":"PROP-076","status":"comparavel"},{"id":"B-01","serie":"B — glebas 1–20 ha","grupo":"ADJ 5-20 ha","portal":"paraguay.inmobiliaria.com","ref":"F2596765","titulo":"Campo 10 ha KM 11 Monday, B° San Jorge (N19 v10)","m2":100000,"preco_txt":"USD 350.000","usd":350000,"usdm2":3.5,"esquina":"","local":"Campo 10 ha KM 11 Monday, B° San Jorge (N19 v10)","lat":-25.5615,"lon":-54.6933,"prec":"coordenada do anúncio","data":"2023","obs":"portal bloqueado; não reverificado","link":"https://paraguay.inmobiliaria.com/campo-en-presidente-franco-10ha-F2596765","dA":2.5,"dB":1.7,"maps":"https://www.google.com/maps?q=-25.561500,-54.693300","maps_sat":"https://www.google.com/maps/@-25.561500,-54.693300,17z/data=!3m1!1e3","propId":"PROP-077","status":"comparavel"},{"id":"B-02","serie":"B — glebas 1–20 ha","grupo":"ADJ 5-20 ha","portal":"Evisos CDE","ref":"id-134509","titulo":"10 ha KM 10 lado Monday, 100×1.000, 5 km da Ruta 7","m2":100000,"preco_txt":"USD 365.000","usd":365000,"usdm2":3.6,"esquina":"","local":"10 ha KM 10 lado Monday, 100×1.000, 5 km da Ruta 7","lat":-25.558,"lon":-54.7,"prec":"aproximada (por KM)","data":"~2015-16","obs":"antigo; preço defasado","link":"https://ciudad-del-este.evisos.com.py/terrenos-10-hectareas-id-134509","dA":3,"dB":2.4,"maps":"https://www.google.com/maps?q=-25.558000,-54.700000","maps_sat":"https://www.google.com/maps/@-25.558000,-54.700000,17z/data=!3m1!1e3","propId":"PROP-078","status":"comparavel"},{"id":"B-03","serie":"B — glebas 1–20 ha","grupo":"ADJ 5-20 ha","portal":"InfoCasas","ref":"187619385","titulo":"6 ha KM 8 Monday, junto ao Fipar Country Club, empedrado","m2":60000,"preco_txt":"USD 600.000","usd":600000,"usdm2":10,"esquina":"","local":"6 ha KM 8 Monday, junto ao Fipar Country Club, empedrado","lat":-25.566,"lon":-54.668,"prec":"aproximada (por KM)","data":"02/03/2021","obs":"arroio ao fundo — verificar faixa","link":"https://www.infocasas.com.py/terreno/187619385","dA":1.9,"dB":1.8,"maps":"https://www.google.com/maps?q=-25.566000,-54.668000","maps_sat":"https://www.google.com/maps/@-25.566000,-54.668000,17z/data=!3m1!1e3","propId":"PROP-079","status":"comparavel"},{"id":"B-04","serie":"B — glebas 1–20 ha","grupo":"ADJ 5-20 ha","portal":"Evisos PF","ref":"id-271872","titulo":"18 ha sobre asfalto, KM 9 camino a Cedrales (N20 v10)","m2":180000,"preco_txt":"USD 2.000.000","usd":2000000,"usdm2":11.1,"esquina":"","local":"18 ha sobre asfalto, KM 9 camino a Cedrales (N20 v10)","lat":-25.578,"lon":-54.67,"prec":"aproximada (por KM)","data":"~2019","obs":"negociável; >60 dias","link":"https://presidente-franco.evisos.com.py/vendo-increible-oportunidad-sobre-asfalto-18-ha-pdte-franco-km-9-id-271872","dA":3.2,"dB":1.4,"maps":"https://www.google.com/maps?q=-25.578000,-54.670000","maps_sat":"https://www.google.com/maps/@-25.578000,-54.670000,17z/data=!3m1!1e3","propId":"PROP-080","status":"comparavel"},{"id":"B-05","serie":"B — glebas 1–20 ha","grupo":"ESTRITO 1-5 ha","portal":"Evisos PF","ref":"id-407501","titulo":"4 ha KM 8 Monday, título, EIA, georreferenciado (Meli Otazu)","m2":40000,"preco_txt":"USD 550.000","usd":550000,"usdm2":13.8,"esquina":"","local":"4 ha KM 8 Monday, título, EIA, georreferenciado (Meli Otazu)","lat":-25.567,"lon":-54.666,"prec":"aproximada (por KM)","data":"out/2025","obs":"comparável mais próximo em tamanho/local","link":"https://presidente-franco.evisos.com.py/vendo-4-hectareas-km-8-monday-id-407501","dA":2,"dB":1.9,"maps":"https://www.google.com/maps?q=-25.567000,-54.666000","maps_sat":"https://www.google.com/maps/@-25.567000,-54.666000,17z/data=!3m1!1e3","propId":"PROP-081","status":"comparavel"},{"id":"B-06","serie":"B — glebas 1–20 ha","grupo":"ADJ 5-20 ha","portal":"InfoCasas","ref":"193012013","titulo":"12 ha a 3 km do Corredor Metropolitano (N16 v10)","m2":120000,"preco_txt":"USD 2.000.000","usd":2000000,"usdm2":16.7,"esquina":"","local":"12 ha a 3 km do Corredor Metropolitano (N16 v10)","lat":-25.5341,"lon":-54.6886,"prec":"coordenada do anúncio","data":"22/10/2025","obs":"outro anúncio a USD 1,1 M","link":"https://www.infocasas.com.py/en-venta-propiedad-en-presidenta-franco-ideal-para-inversionistas/192955248","dA":2.4,"dB":4.5,"maps":"https://www.google.com/maps?q=-25.534100,-54.688600","maps_sat":"https://www.google.com/maps/@-25.534100,-54.688600,17z/data=!3m1!1e3","sameAs":"PF-36","propId":"PROP-038","status":"comparavel"},{"id":"B-07","serie":"B — glebas 1–20 ha","grupo":"ESTRITO 1-5 ha","portal":"RE/MAX","ref":"143050095-10","titulo":"11.815 m² comercial KM 8 Av. Monday, San Isidro, 400 m da avenida","m2":11815,"preco_txt":"USD 220.000","usd":220000,"usdm2":18.6,"esquina":"","local":"11.815 m² comercial KM 8 Av. Monday, San Isidro, 400 m da avenida","lat":-25.5685,"lon":-54.6705,"prec":"aproximada (por bairro/KM)","data":"ativo 24/10/2026","obs":"vizinho direto do alvo B","link":"https://www.remax.com.py/en/listings/land/for-sale/presidente-franco/km-8-avda-monday-km-8-avda-monday/143050095-10","dA":2.1,"dB":1.5,"maps":"https://www.google.com/maps?q=-25.568500,-54.670500","maps_sat":"https://www.google.com/maps/@-25.568500,-54.670500,17z/data=!3m1!1e3","sameAs":"PF-25","propId":"PROP-027","status":"comparavel"},{"id":"B-08","serie":"B — glebas 1–20 ha","grupo":"ESTRITO 1-5 ha","portal":"InfoCasas","ref":"192798349","titulo":"9.825 m² zona Monday, 2 quadras do asfalto (zona baixa)","m2":9825,"preco_txt":"USD 285.000","usd":285000,"usdm2":29,"esquina":"","local":"9.825 m² zona Monday, 2 quadras do asfalto (zona baixa)","lat":-25.5626,"lon":-54.6243,"prec":"coordenada do anúncio","data":"27/08/2025","obs":"antes 350k","link":"https://www.infocasas.com.py/terreno/192798349","dA":5,"dB":6.1,"maps":"https://www.google.com/maps?q=-25.562600,-54.624300","maps_sat":"https://www.google.com/maps/@-25.562600,-54.624300,17z/data=!3m1!1e3","sameAs":"PF-30","propId":"PROP-032","status":"comparavel"},{"id":"B-09","serie":"B — glebas 1–20 ha","grupo":"ESTRITO 1-5 ha","portal":"Clasipar","ref":"1730500","titulo":"11.242 m² sobre asfalto perto da Esc. Saltos del Monday","m2":11242,"preco_txt":"USD 320.000","usd":320000,"usdm2":28.5,"esquina":"","local":"11.242 m² sobre asfalto perto da Esc. Saltos del Monday","lat":-25.5455,"lon":-54.6745,"prec":"aproximada (por referência)","data":"renov. 21/10/2026","obs":"","link":"https://clasipar.paraguay.com/inmuebles/terrenos/venta-de-hermoso-terreno-sobre-asfalto-de-1-hectarea-320000-usd-1730500","dA":0.5,"dB":3.3,"maps":"https://www.google.com/maps?q=-25.545500,-54.674500","maps_sat":"https://www.google.com/maps/@-25.545500,-54.674500,17z/data=!3m1!1e3","sameAs":"PF-28","propId":"PROP-030","status":"comparavel"},{"id":"B-10","serie":"B — glebas 1–20 ha","grupo":"ESTRITO 1-5 ha","portal":"InfoCasas","ref":"190969294","titulo":"11.215 m² sobre asfalto, 198 m frente, 3 ruas, 1,1 km da Av. Monday","m2":11215,"preco_txt":"USD 330.000","usd":330000,"usdm2":29.4,"esquina":"","local":"11.215 m² sobre asfalto, 198 m frente, 3 ruas, 1,1 km da Av. Monday","lat":-25.5623,"lon":-54.6471,"prec":"coordenada do anúncio","data":"2024 (atual. 27/04/2026)","obs":"","link":"https://www.infocasas.com.py/terreno/190969294","dA":2.9,"dB":3.9,"maps":"https://www.google.com/maps?q=-25.562300,-54.647100","maps_sat":"https://www.google.com/maps/@-25.562300,-54.647100,17z/data=!3m1!1e3","sameAs":"PF-31","propId":"PROP-033","status":"comparavel"},{"id":"B-11","serie":"B — glebas 1–20 ha","grupo":"ESTRITO 1-5 ha","portal":"Evisos CDE","ref":"id-407503","titulo":"2 ha KM 7 Monday CDE, zona Gas Porã (urbana)","m2":20000,"preco_txt":"USD 500.000","usd":500000,"usdm2":25,"esquina":"","local":"2 ha KM 7 Monday CDE, zona Gas Porã (urbana)","lat":-25.545,"lon":-54.665,"prec":"aproximada (por KM)","data":"out/2025","obs":"teto urbano; mesmo tamanho do alvo","link":"https://ciudad-del-este.evisos.com.py/vendo-2-hectareas-km-7-monday-id-407503","dA":0.9,"dB":3.7,"maps":"https://www.google.com/maps?q=-25.545000,-54.665000","maps_sat":"https://www.google.com/maps/@-25.545000,-54.665000,17z/data=!3m1!1e3","propId":"PROP-082","status":"comparavel"},{"id":"B-12","serie":"B — glebas 1–20 ha","grupo":"ESTRITO 1-5 ha","portal":"Clasipar","ref":"2239930","titulo":"1 ha KM 6 Monday (bairro residencial)","m2":10000,"preco_txt":"USD 400.000","usd":400000,"usdm2":40,"esquina":"","local":"1 ha KM 6 Monday (bairro residencial)","lat":-25.559,"lon":-54.654,"prec":"aproximada (por KM)","data":"renov. 15/10/2026","obs":"","link":"https://clasipar.paraguay.com/inmuebles/terrenos/vendo-una-hectarea-en-km-6-monday-cod-1850-2239930","dA":2.1,"dB":3.4,"maps":"https://www.google.com/maps?q=-25.559000,-54.654000","maps_sat":"https://www.google.com/maps/@-25.559000,-54.654000,17z/data=!3m1!1e3","sameAs":"PF-29","propId":"PROP-031","status":"comparavel"},{"id":"B-13","serie":"B — glebas 1–20 ha","grupo":"ADJ 5-20 ha","portal":"InfoCasas","ref":"193947090","titulo":"6,25 ha sobre a Av. Monday KM 9, perto da ponte do Monday","m2":62500,"preco_txt":"USD 3.000.000","usd":3000000,"usdm2":48,"esquina":"","local":"6,25 ha sobre a Av. Monday KM 9, perto da ponte do Monday","lat":-25.5582,"lon":-54.6422,"prec":"coordenada do anúncio","data":"02/07/2026","obs":"outros a 3,3 M","link":"https://www.infocasas.com.py/en-venta-propiedad-de-625-has-sobre-av-monday-pdte-franco/193947090","dA":3.1,"dB":4.5,"maps":"https://www.google.com/maps?q=-25.558200,-54.642200","maps_sat":"https://www.google.com/maps/@-25.558200,-54.642200,17z/data=!3m1!1e3","sameAs":"PF-33","propId":"PROP-035","status":"comparavel"},{"id":"B-14","serie":"B — glebas 1–20 ha","grupo":"SEM PREÇO","portal":"Evisos AP","ref":"id-1413","titulo":"2,5 ha 60×580 m sobre Av. Monday KM 8, casa, ANDE, água","m2":25000,"preco_txt":"sem preço","usd":null,"usdm2":null,"esquina":"","local":"2,5 ha 60×580 m sobre Av. Monday KM 8, casa, ANDE, água","lat":-25.5653,"lon":-54.6674,"prec":"aproximada (por KM)","data":"antigo","obs":"mesmo tamanho/local do alvo","link":"https://altoparana.evisos.com.py/propiedad-para-granja-id-1413","dA":1.8,"dB":1.9,"maps":"https://www.google.com/maps?q=-25.565300,-54.667400","maps_sat":"https://www.google.com/maps/@-25.565300,-54.667400,17z/data=!3m1!1e3","propId":"PROP-083","status":"sem_preco"},{"id":"B-15","serie":"B — glebas 1–20 ha","grupo":"DESCARTE (rio)","portal":"Evisos PF","ref":"id-48649","titulo":"55.168 m² KM 3,5 Monday (Finca 6.260)","m2":55168,"preco_txt":"USD 300.000","usd":300000,"usdm2":5.4,"esquina":"","local":"55.168 m² KM 3,5 Monday (Finca 6.260)","lat":-25.556,"lon":-54.632,"prec":"aproximada (por KM)","data":"2014","obs":"Rio Monday, faixa 200 m","link":"","dA":4.1,"dB":5.6,"maps":"https://www.google.com/maps?q=-25.556000,-54.632000","maps_sat":"https://www.google.com/maps/@-25.556000,-54.632000,17z/data=!3m1!1e3","propId":"PROP-084","status":"descartado","motivo_descarte":"Faixa de proteção legal de 200 m do Rio Monday (restrição ambiental severa)"},{"id":"B-16","serie":"B — glebas 1–20 ha","grupo":"DESCARTE (rio)","portal":"Clasipar","ref":"1653660","titulo":"20 ha KM 9 Monday na margem do Rio Monday (N34 v10)","m2":200000,"preco_txt":"USD 1.000.000","usd":1000000,"usdm2":5,"esquina":"","local":"20 ha KM 9 Monday na margem do Rio Monday (N34 v10)","lat":-25.578,"lon":-54.682,"prec":"aproximada (por KM)","data":"n.d.","obs":"beira do rio — Ley 4241/10","link":"https://clasipar.paraguay.com/inmuebles/propiedades-rurales/en-venta-propiedad-de-20-hectareas-pte-franco-1000000-usd-1653660","dA":3.3,"dB":0.5,"maps":"https://www.google.com/maps?q=-25.578000,-54.682000","maps_sat":"https://www.google.com/maps/@-25.578000,-54.682000,17z/data=!3m1!1e3","propId":"PROP-085","status":"descartado","motivo_descarte":"Beira do Rio Monday — restrições hídricas e florestais da Ley 4241/10"},{"id":"B-17","serie":"B — glebas 1–20 ha","grupo":"FORA DO EIXO","portal":"InfoCasas","ref":"192235766","titulo":"15.743 m² KM 14 Monday, Ruta Los Cedrales (Minga Guazú)","m2":15743,"preco_txt":"USD 130.101","usd":130101,"usdm2":8.3,"esquina":"","local":"15.743 m² KM 14 Monday, Ruta Los Cedrales (Minga Guazú)","lat":-25.53,"lon":-54.75,"prec":"aproximada (por KM)","data":"04/04/2025","obs":"","link":"https://www.infocasas.com.py/terreno/192235766","dA":8.1,"dB":8.3,"maps":"https://www.google.com/maps?q=-25.530000,-54.750000","maps_sat":"https://www.google.com/maps/@-25.530000,-54.750000,17z/data=!3m1!1e3","propId":"PROP-086","status":"fora_do_eixo"},{"id":"B-18","serie":"B — glebas 1–20 ha","grupo":"FORA DO EIXO","portal":"InfoCasas","ref":"191974857","titulo":"2,47 ha KM 14 Minga Guazú","m2":24700,"preco_txt":"USD 150.000","usd":150000,"usdm2":6.1,"esquina":"","local":"2,47 ha KM 14 Minga Guazú","lat":-25.528,"lon":-54.752,"prec":"aproximada (por KM)","data":"05/02/2025","obs":"área inconsistente","link":"https://www.infocasas.com.py/terreno/191974857","dA":8.4,"dB":8.6,"maps":"https://www.google.com/maps?q=-25.528000,-54.752000","maps_sat":"https://www.google.com/maps/@-25.528000,-54.752000,17z/data=!3m1!1e3","propId":"PROP-087","status":"fora_do_eixo"},{"id":"B-19","serie":"B — glebas 1–20 ha","grupo":"DESCARTE (arroio)","portal":"InfoCasas","ref":"191911221","titulo":"5 ha zona CDE KM 14 (Casa de Elvio), 3 tanques","m2":50000,"preco_txt":"USD 97.000","usd":97000,"usdm2":1.9,"esquina":"","local":"5 ha zona CDE KM 14 (Casa de Elvio), 3 tanques","lat":-25.532,"lon":-54.748,"prec":"aproximada (por KM)","data":"23/01/2025","obs":"arroio atravessa","link":"https://www.infocasas.com.py/terreno/191911221","dA":7.9,"dB":8,"maps":"https://www.google.com/maps?q=-25.532000,-54.748000","maps_sat":"https://www.google.com/maps/@-25.532000,-54.748000,17z/data=!3m1!1e3","propId":"PROP-088","status":"descartado","motivo_descarte":"Arroio atravessa o lote — restrição hídrica / faixa marginal de proteção"},{"id":"B-20","serie":"B — glebas 1–20 ha","grupo":"DESCARTE (nascentes)","portal":"Evisos Los Cedrales","ref":"id-399026","titulo":"2,5 ha Los Cedrales, 1 km do asfalto","m2":25000,"preco_txt":"USD 26.020","usd":26020,"usdm2":1,"esquina":"","local":"2,5 ha Los Cedrales, 1 km do asfalto","lat":-25.6554,"lon":-54.7213,"prec":"aproximada (cidade)","data":"jan/2024","obs":"nascentes","link":"https://los-cedrales.evisos.com.py/terreno-id-399026","dA":12.8,"dB":9.8,"maps":"https://www.google.com/maps?q=-25.655400,-54.721300","maps_sat":"https://www.google.com/maps/@-25.655400,-54.721300,17z/data=!3m1!1e3","propId":"PROP-089","status":"descartado","motivo_descarte":"Presença de nascentes ativas no terreno — restrição ambiental absoluta"}];
+const GEOM = [{"kind":"river","name":"Río Monday","pts":[[-25.57078,-54.70574],[-25.57024,-54.70537],[-25.56987,-54.70493],[-25.56963,-54.70417],[-25.56967,-54.7033],[-25.57009,-54.70217],[-25.57049,-54.70102],[-25.57062,-54.69986],[-25.57049,-54.69919],[-25.57012,-54.69827],[-25.56963,-54.69733],[-25.56884,-54.69685],[-25.56806,-54.6968],[-25.56697,-54.69704],[-25.56539,-54.69737],[-25.56413,-54.69779],[-25.56257,-54.69811],[-25.56115,-54.69861],[-25.56003,-54.69895],[-25.55895,-54.69935],[-25.55788,-54.69947],[-25.55644,-54.69948],[-25.5552,-54.69911],[-25.55482,-54.69873]]},{"kind":"power","name":"Avenida Santiago Lecuizamón","pts":[[-25.46042,-54.62362],[-25.46042,-54.62393],[-25.46042,-54.62434],[-25.46045,-54.62457],[-25.46118,-54.62569],[-25.46362,-54.62943],[-25.46517,-54.63187],[-25.46607,-54.63286],[-25.4684,-54.63535],[-25.47052,-54.63763],[-25.47239,-54.63963],[-25.47415,-54.6415],[-25.47547,-54.64202],[-25.47666,-54.64251],[-25.47782,-54.64295],[-25.47862,-54.64328],[-25.47937,-54.64358],[-25.48121,-54.64433],[-25.48285,-54.64497],[-25.48386,-54.64536],[-25.48487,-54.64575],[-25.48584,-54.64614],[-25.48789,-54.647],[-25.48855,-54.64725],[-25.48988,-54.64778],[-25.49104,-54.64825],[-25.49275,-54.64891],[-25.49441,-54.64959],[-25.49643,-54.6504],[-25.49646,-54.65042],[-25.49754,-54.65085],[-25.49801,-54.65104],[-25.5004,-54.65201],[-25.50149,-54.65243],[-25.50299,-54.65314],[-25.5061,-54.65446],[-25.51204,-54.65682],[-25.51504,-54.65802],[-25.51755,-54.65905],[-25.52055,-54.66026],[-25.52357,-54.66148],[-25.52483,-54.66199],[-25.52657,-54.6627],[-25.52751,-54.66307],[-25.52753,-54.66308],[-25.52951,-54.66387],[-25.52979,-54.66398],[-25.53163,-54.66473],[-25.53485,-54.66602],[-25.53767,-54.66715],[-25.54071,-54.66832],[-25.54349,-54.66945],[-25.54642,-54.67062],[-25.54952,-54.67186],[-25.5525,-54.67311],[-25.55611,-54.67459],[-25.55874,-54.67565],[-25.56177,-54.67681],[-25.56507,-54.67815],[-25.5683,-54.67944],[-25.57073,-54.68042],[-25.5739,-54.68168],[-25.57711,-54.68298],[-25.58012,-54.6842],[-25.58315,-54.68542],[-25.58599,-54.68656],[-25.58926,-54.68788],[-25.59166,-54.68883],[-25.5947,-54.69007],[-25.59778,-54.69129],[-25.60085,-54.69254],[-25.60393,-54.69376],[-25.60707,-54.69503],[-25.61013,-54.69623],[-25.6131,-54.69743],[-25.61606,-54.69864],[-25.61905,-54.69984],[-25.62201,-54.70103],[-25.62499,-54.70224],[-25.62792,-54.70342],[-25.63101,-54.70466],[-25.63408,-54.7059],[-25.63718,-54.70714],[-25.64027,-54.70838],[-25.64337,-54.70961],[-25.64653,-54.71088],[-25.64956,-54.71211],[-25.6526,-54.71332],[-25.65568,-54.7146],[-25.65871,-54.71582],[-25.66176,-54.71703],[-25.66494,-54.71831],[-25.66796,-54.71952],[-25.67101,-54.72075],[-25.67408,-54.72199],[-25.67713,-54.72321],[-25.67982,-54.72433],[-25.68293,-54.72556],[-25.68592,-54.72676],[-25.68898,-54.72799]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.54308,-54.65239],[-25.54289,-54.65226],[-25.54273,-54.65217],[-25.54238,-54.65204],[-25.54172,-54.65178],[-25.54091,-54.65146],[-25.54083,-54.65143]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.5161,-54.64253],[-25.51641,-54.64266],[-25.51708,-54.64295],[-25.51723,-54.64301],[-25.51751,-54.64314],[-25.51756,-54.64316],[-25.51761,-54.64318],[-25.5183,-54.64349],[-25.51968,-54.64411],[-25.51999,-54.64425],[-25.52061,-54.64452],[-25.52218,-54.64512],[-25.52278,-54.64534],[-25.52399,-54.64579],[-25.52478,-54.64608],[-25.52519,-54.64622],[-25.52558,-54.64635],[-25.52594,-54.64647],[-25.52712,-54.64689],[-25.5282,-54.64726],[-25.52876,-54.64746],[-25.52928,-54.64762],[-25.53124,-54.64824],[-25.53143,-54.6483],[-25.53157,-54.64835],[-25.53228,-54.64858],[-25.53236,-54.64861],[-25.53268,-54.64872],[-25.5332,-54.64889],[-25.53329,-54.64892]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.55464,-54.65249],[-25.55449,-54.65255],[-25.55377,-54.65281],[-25.55366,-54.65285],[-25.55316,-54.65307],[-25.55256,-54.65332],[-25.55242,-54.65337],[-25.55197,-54.6535],[-25.55168,-54.65355],[-25.55149,-54.65359],[-25.55113,-54.65362],[-25.55104,-54.65365],[-25.55095,-54.6537],[-25.55055,-54.65395],[-25.54987,-54.65428]]},{"kind":"road","name":"","pts":[[-25.53347,-54.67763],[-25.53352,-54.67761],[-25.53443,-54.67771],[-25.53533,-54.67778],[-25.53597,-54.67784],[-25.53689,-54.67792],[-25.53902,-54.67811],[-25.53924,-54.67813],[-25.53991,-54.67821],[-25.54014,-54.67823],[-25.54067,-54.67827],[-25.54259,-54.6784],[-25.54262,-54.67841],[-25.54361,-54.6785],[-25.54394,-54.67854],[-25.54401,-54.67854]]},{"kind":"road","name":"","pts":[[-25.54401,-54.67854],[-25.54409,-54.67851],[-25.54414,-54.67846],[-25.54474,-54.67775],[-25.54541,-54.67693],[-25.5457,-54.67655],[-25.54595,-54.67624],[-25.54681,-54.67512],[-25.54723,-54.67457],[-25.54762,-54.67405],[-25.54793,-54.67364],[-25.54813,-54.67338],[-25.54833,-54.67311],[-25.54859,-54.67277],[-25.54876,-54.67254],[-25.54913,-54.67204],[-25.54933,-54.67176],[-25.54942,-54.67161],[-25.54967,-54.67126],[-25.54994,-54.67086],[-25.55012,-54.67061],[-25.55032,-54.67033],[-25.55094,-54.66964],[-25.55155,-54.66896],[-25.55163,-54.66887],[-25.55236,-54.66813],[-25.55276,-54.66777],[-25.55286,-54.6676],[-25.55286,-54.66739],[-25.55281,-54.66723],[-25.55241,-54.66674],[-25.55192,-54.66609],[-25.5518,-54.66593],[-25.55156,-54.66554],[-25.55149,-54.6654],[-25.55123,-54.66478],[-25.55114,-54.66456],[-25.55107,-54.66436],[-25.55096,-54.66395],[-25.55095,-54.66385],[-25.55095,-54.66373],[-25.55094,-54.66352],[-25.551,-54.66293],[-25.55109,-54.66234]]},{"kind":"road","name":"","pts":[[-25.53316,-54.6809],[-25.53317,-54.68073],[-25.53319,-54.68051],[-25.53323,-54.68008],[-25.53341,-54.67776],[-25.53342,-54.67769],[-25.53347,-54.67763]]},{"kind":"road","name":"","pts":[[-25.53268,-54.64872],[-25.53271,-54.64863]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.53329,-54.64892],[-25.53415,-54.64921],[-25.53457,-54.64936],[-25.53492,-54.64948],[-25.53542,-54.64965],[-25.53573,-54.64975],[-25.53598,-54.64986],[-25.53655,-54.65005],[-25.53734,-54.65031]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.53332,-54.64882],[-25.53271,-54.64863],[-25.53229,-54.64848]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.53734,-54.65031],[-25.53806,-54.65056],[-25.53841,-54.65068],[-25.53852,-54.65072],[-25.53854,-54.65072],[-25.53909,-54.65091],[-25.53937,-54.65102],[-25.53959,-54.65109],[-25.53961,-54.6511],[-25.5401,-54.65128],[-25.54022,-54.65132],[-25.54039,-54.65139],[-25.54087,-54.65157],[-25.54129,-54.65176],[-25.54169,-54.65188],[-25.54192,-54.65197],[-25.54264,-54.65225],[-25.54271,-54.65227],[-25.54288,-54.65234],[-25.54308,-54.65239]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.53737,-54.65019],[-25.53657,-54.64992],[-25.53601,-54.64974],[-25.53576,-54.64966],[-25.53545,-54.64956],[-25.5346,-54.64926],[-25.53417,-54.64912],[-25.53363,-54.64893],[-25.53351,-54.64888],[-25.53332,-54.64882]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.54401,-54.65275],[-25.54375,-54.65265],[-25.5434,-54.65251],[-25.54327,-54.65246],[-25.54308,-54.65239]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.5468,-54.65366],[-25.54604,-54.6534],[-25.54521,-54.65314],[-25.54433,-54.65285],[-25.54401,-54.65275]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.54987,-54.65428],[-25.54932,-54.65448],[-25.5492,-54.65451],[-25.54904,-54.65453],[-25.54887,-54.6545],[-25.54864,-54.65442],[-25.54833,-54.65427],[-25.54802,-54.65415],[-25.54778,-54.65405],[-25.54761,-54.65397],[-25.5469,-54.6537],[-25.5468,-54.65366]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.54026,-54.65122],[-25.54016,-54.65119],[-25.53914,-54.6508],[-25.5381,-54.65044],[-25.53737,-54.65019]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.53066,-54.64795],[-25.52931,-54.64751],[-25.52879,-54.64735],[-25.52823,-54.64716],[-25.52789,-54.64705],[-25.5277,-54.64699],[-25.52721,-54.64681],[-25.52715,-54.64679],[-25.52645,-54.64654],[-25.52597,-54.64637],[-25.52586,-54.64633],[-25.52561,-54.64624],[-25.52531,-54.64613],[-25.52523,-54.64611],[-25.52481,-54.64597]]},{"kind":"road","name":"","pts":[[-25.55109,-54.66234],[-25.55117,-54.66199],[-25.55126,-54.66151],[-25.55135,-54.66092],[-25.5517,-54.66075]]},{"kind":"road","name":"","pts":[[-25.5517,-54.66075],[-25.55232,-54.66047],[-25.55242,-54.66042],[-25.55309,-54.66014],[-25.55321,-54.6601],[-25.55445,-54.65963],[-25.55505,-54.65939],[-25.55531,-54.6593],[-25.5557,-54.65912],[-25.5561,-54.65895],[-25.55633,-54.65885],[-25.55712,-54.6585]]},{"kind":"py07","name":"Avenida Monday","pts":[[-25.56126,-54.66368],[-25.56155,-54.66396],[-25.56175,-54.66415],[-25.5627,-54.66502],[-25.56322,-54.66548],[-25.56336,-54.66562],[-25.56381,-54.66604],[-25.56407,-54.6663],[-25.5645,-54.66667],[-25.56473,-54.66688],[-25.56489,-54.66701],[-25.56525,-54.66737]]},{"kind":"py07","name":"Avenida Monday","pts":[[-25.55588,-54.65306],[-25.55596,-54.65344],[-25.556,-54.65364],[-25.55605,-54.65391],[-25.55607,-54.65399],[-25.55612,-54.65426],[-25.55614,-54.65435],[-25.5562,-54.65461],[-25.55637,-54.65538],[-25.55656,-54.65618],[-25.55666,-54.65664],[-25.55672,-54.65689],[-25.55688,-54.6575],[-25.55712,-54.6585],[-25.55719,-54.65874],[-25.55739,-54.65949],[-25.55741,-54.65956],[-25.55747,-54.65975],[-25.55757,-54.66008],[-25.55765,-54.66028],[-25.55778,-54.66049],[-25.55795,-54.6607],[-25.55836,-54.66107],[-25.55903,-54.66167],[-25.5592,-54.66182],[-25.55976,-54.66234],[-25.5601,-54.66263],[-25.56051,-54.66302],[-25.56094,-54.66339],[-25.56126,-54.66368]]},{"kind":"river","name":"Río Monday","pts":[[-25.55891,-54.68618],[-25.56013,-54.68694],[-25.56087,-54.68774],[-25.56178,-54.68873],[-25.56292,-54.68961],[-25.56402,-54.69024],[-25.56503,-54.69043],[-25.56653,-54.69025],[-25.56746,-54.68976],[-25.5684,-54.68943],[-25.56914,-54.68963],[-25.56989,-54.69022],[-25.57118,-54.69171],[-25.57211,-54.69306],[-25.57301,-54.69368],[-25.57388,-54.69385],[-25.5746,-54.6936],[-25.57557,-54.69304],[-25.57615,-54.69221],[-25.57656,-54.69106],[-25.57687,-54.68934],[-25.57718,-54.68762],[-25.57746,-54.68591],[-25.57724,-54.68496],[-25.5768,-54.68435],[-25.57596,-54.6836],[-25.57534,-54.68291],[-25.57499,-54.682],[-25.57506,-54.68125],[-25.57532,-54.68007],[-25.57551,-54.67889],[-25.57557,-54.67758],[-25.57565,-54.67563],[-25.57584,-54.67376],[-25.57625,-54.67209],[-25.57674,-54.67076],[-25.57735,-54.67036],[-25.57795,-54.67018],[-25.57844,-54.67033],[-25.57922,-54.67115],[-25.57998,-54.67225],[-25.58101,-54.67376],[-25.58187,-54.67505],[-25.58297,-54.67551],[-25.58442,-54.67588],[-25.58573,-54.67625],[-25.58663,-54.67625],[-25.58759,-54.6759],[-25.58908,-54.67559],[-25.59018,-54.67537],[-25.59101,-54.67483],[-25.59107,-54.6741],[-25.59072,-54.6732],[-25.5903,-54.67255],[-25.58943,-54.67185],[-25.5884,-54.67095],[-25.58779,-54.67025],[-25.58767,-54.66989],[-25.58806,-54.66893],[-25.5885,-54.66802],[-25.58896,-54.66659],[-25.58914,-54.66544],[-25.5887,-54.66474],[-25.58805,-54.66412],[-25.58748,-54.66375],[-25.58702,-54.66386],[-25.58672,-54.66418],[-25.58638,-54.66502],[-25.58592,-54.66603],[-25.58528,-54.66709],[-25.58463,-54.66795],[-25.58401,-54.66854],[-25.5833,-54.66895],[-25.58247,-54.66927],[-25.58199,-54.66919],[-25.58165,-54.6688],[-25.58164,-54.66819],[-25.58174,-54.66689],[-25.58185,-54.6659],[-25.58169,-54.66523],[-25.58146,-54.66444],[-25.58097,-54.664],[-25.58028,-54.66408],[-25.57967,-54.66437],[-25.57857,-54.66465],[-25.57737,-54.66498],[-25.57643,-54.66498],[-25.57571,-54.66477],[-25.57535,-54.66426],[-25.57487,-54.66347],[-25.5744,-54.66242],[-25.57419,-54.66158],[-25.57419,-54.66044],[-25.57446,-54.65972]]},{"kind":"py07","name":"Avenida Monday","pts":[[-25.56525,-54.66737],[-25.56554,-54.66764],[-25.5658,-54.66788],[-25.56597,-54.66804],[-25.56648,-54.66848],[-25.56673,-54.66871],[-25.56748,-54.66937],[-25.56816,-54.66996],[-25.56839,-54.67017],[-25.56884,-54.67051],[-25.56922,-54.67082],[-25.56942,-54.67098],[-25.56976,-54.67123],[-25.56989,-54.67128],[-25.57,-54.67128],[-25.57086,-54.67099],[-25.57439,-54.66977],[-25.57524,-54.66948]]},{"kind":"py07","name":"Avenida Monday","pts":[[-25.55292,-54.63653],[-25.55289,-54.63705],[-25.55285,-54.63748],[-25.55281,-54.63797],[-25.55278,-54.63832],[-25.55271,-54.63914],[-25.55276,-54.63953],[-25.55277,-54.63961],[-25.55278,-54.63971],[-25.55295,-54.64024],[-25.55344,-54.64203],[-25.55359,-54.64262],[-25.55366,-54.64283],[-25.55387,-54.64351],[-25.55394,-54.64378],[-25.55399,-54.64396],[-25.55411,-54.64447],[-25.55416,-54.64469],[-25.5542,-54.64484],[-25.55424,-54.64504],[-25.55439,-54.64573],[-25.55464,-54.64689],[-25.55466,-54.64703],[-25.55476,-54.64753],[-25.55493,-54.64842],[-25.55494,-54.64847],[-25.55521,-54.64987],[-25.55521,-54.64992],[-25.55523,-54.64997],[-25.55544,-54.65097],[-25.55547,-54.6511]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.54083,-54.65143],[-25.54026,-54.65122]]},{"kind":"py07","name":"Avenida Monday","pts":[[-25.57723,-54.66879],[-25.57786,-54.66859],[-25.57811,-54.66858],[-25.57828,-54.66863],[-25.57994,-54.66955],[-25.58104,-54.67017],[-25.58148,-54.67043],[-25.58257,-54.67108],[-25.58294,-54.67128],[-25.58319,-54.67146],[-25.58331,-54.67156],[-25.58341,-54.67165],[-25.58344,-54.67175],[-25.58352,-54.67198],[-25.58354,-54.67204],[-25.58361,-54.67235],[-25.58406,-54.67429],[-25.58408,-54.67438],[-25.5841,-54.6745],[-25.58409,-54.67463],[-25.58404,-54.67491]]},{"kind":"py07","name":"Avenida Monday","pts":[[-25.57524,-54.66948],[-25.57637,-54.66909],[-25.57723,-54.66879]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.53229,-54.64848],[-25.5316,-54.64825],[-25.53146,-54.64821],[-25.53066,-54.64795]]},{"kind":"road","name":"Amado Benítez Gamarra","pts":[[-25.55567,-54.65212],[-25.55544,-54.6522],[-25.55464,-54.65249]]},{"kind":"py07","name":"Avenida Monday","pts":[[-25.55547,-54.6511],[-25.55552,-54.6514],[-25.55562,-54.65189],[-25.55567,-54.65212]]},{"kind":"py07","name":"Avenida Monday","pts":[[-25.55567,-54.65212],[-25.55588,-54.65306]]}];
+const REFS = [["Pte. Franco — centro",-25.56,-54.61],["CDE — microcentro",-25.509,-54.611],["Puente de la Integración",-25.5887,-54.5955],["Saltos del Monday",-25.5627,-54.6324],["Área 5 / UPE",-25.552,-54.616],["Ciudad Nueva (PY02 KM 7–8)",-25.5187,-54.6701],["Los Cedrales",-25.6554,-54.7213],["Rodan — Puesta del Sol",-25.5562,-54.6786],["Puente de la Amistad",-25.5095,-54.6035],["Santo Domingo",-25.5495,-54.6765],["San Isidro",-25.57,-54.6751],["Tres Fronteras",-25.5854,-54.6059]];
+
+// Spatial projection
+const K = Math.cos(-25.56 * Math.PI / 180);
+const px = (lat, lon) => [(lon + 54.75) * 111.2 * K, (-lat - 25.45) * 111.2];
+
+const svg = document.getElementById('map');
+const NS = 'http://www.w3.org/2000/svg';
+const el = (n, a = {}) => {
+  const e = document.createElementNS(NS, n);
+  for (const k in a) e.setAttribute(k, a[k]);
+  return e;
+};
+
+const gBase = el('g'), gLbl = el('g'), gMk = el('g');
+svg.append(gBase, gLbl, gMk);
+
+const COL = { river: 'var(--river)', power: 'var(--power)', py07: 'var(--py07)', road: 'var(--road)' };
+const W = { river: 2.6, power: 2, py07: 2.4, road: 1.4 };
+
+// Render Map Geometries
+for (const g of GEOM) {
+  const p = el('path', {
+    d: 'M' + g.pts.map(q => px(q[0], q[1]).map(v => v.toFixed(3)).join(' ')).join('L'),
+    fill: 'none',
+    stroke: COL[g.kind] || '#888',
+    'stroke-width': W[g.kind] || 1.4,
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    opacity: g.kind === 'river' ? '0.75' : '0.6'
+  });
+  if (g.kind === 'power') p.setAttribute('stroke-dasharray', '1.2 1.2');
+  gBase.append(p);
+}
+
+// Render Reference Points
+for (const [n, la, lo] of REFS) {
+  const [x, y] = px(la, lo);
+  gLbl.append(el('circle', { cx: x, cy: y, r: 0.06, fill: 'var(--text-muted)' }));
+  const t = el('text', {
+    x: x + 0.1,
+    y: y + 0.05,
+    'font-size': '0.22',
+    fill: 'var(--text-muted)',
+    'font-family': 'var(--font-sans)',
+    class: 'ref-lbl'
+  });
+  t.textContent = n;
+  gLbl.append(t);
+}
+
+// Category grouping resolution (Preserving Serie B original categories)
+function grpOf(r) {
+  if (r.grupo === 'ALVO') return 'ALVO';
+  if (r.id.startsWith('PF-')) return r.grupo;
+  if (r.id.startsWith('B-')) {
+    if (r.grupo === 'ESTRITO 1-5 ha') return 'GL1-5';
+    if (r.grupo === 'ADJ 5-20 ha') return 'GL5-20';
+    if (r.grupo === 'FORA DO EIXO') return 'FORA';
+    if (r.grupo === 'SEM PREÇO') return 'SEM_PRECO';
+    if (r.grupo.startsWith('DESCARTE')) return 'DESCARTE';
+  }
+  return r.grupo;
+}
+
+function colOf(r) {
+  if (r.id === 'ALVO-A') return 'var(--alvo-a)';
+  if (r.id === 'ALVO-B') return 'var(--alvo-b)';
+  if (r.status === 'descartado') return 'var(--grp-DESC)';
+  const g = grpOf(r);
+  return {
+    A: 'var(--grp-A)',
+    A2: 'var(--grp-A2)',
+    B: 'var(--grp-B)',
+    C: 'var(--grp-C)',
+    'GL1-5': 'var(--grp-GL1)',
+    'GL5-20': 'var(--grp-GL5)',
+    FORA: 'var(--grp-FORA)',
+    DESCARTE: 'var(--grp-DESC)',
+    SEM_PRECO: 'var(--grp-SEMPRECO)'
+  }[g] || '#888';
+}
+
+const isEx = r => !/aprox/.test(r.prec);
+
+// Render interactive map markers
+const marks = {};
+for (const r of DATA) {
+  const [x, y] = px(r.lat, r.lon);
+  const g = el('g', {
+    class: 'mk',
+    'data-id': r.id,
+    tabindex: '0',
+    role: 'button',
+    'aria-label': `${r.id}: ${r.titulo}, ${r.usdm2 ? 'USD ' + r.usdm2 + '/m²' : 'sem preço'}`
+  });
+
+  const isAlvo = r.grupo === 'ALVO';
+  const rad = isAlvo ? 0.28 : 0.16;
+
+  const c = el('circle', {
+    cx: x,
+    cy: y,
+    r: rad,
+    fill: colOf(r),
+    'fill-opacity': isAlvo ? 1 : 0.8,
+    stroke: isAlvo ? 'var(--text-main)' : 'var(--bg-card)',
+    'stroke-width': isAlvo ? 0.07 : 0.03
+  });
+
+  if (!isEx(r)) {
+    c.setAttribute('stroke-dasharray', '0.06 0.04');
+    c.setAttribute('stroke', 'var(--text-main)');
+  }
+
+  g.append(c);
+
+  const tt = el('title');
+  tt.textContent = `${r.id} · ${r.titulo} · USD ${r.usdm2 ?? '–'}/m²${r.status === 'descartado' ? ' [DESCARTADO]' : ''}`;
+  g.append(tt);
+
+  if (isAlvo) {
+    const t = el('text', {
+      x: x + 0.3,
+      y: y + 0.09,
+      'font-size': '0.32',
+      'font-weight': '700',
+      fill: colOf(r),
+      'font-family': 'var(--font-sans)'
+    });
+    t.textContent = r.id === 'ALVO-A' ? 'A' : 'B';
+    g.append(t);
+  }
+
+  // Keyboard navigation on marker
+  g.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      select(r.id, true);
+    }
+  });
+
+  // Click on marker with drag threshold check
+  g.addEventListener('click', e => {
+    if (wasDragging) return;
+    select(r.id, true);
+  });
+
+  gMk.append(g);
+  marks[r.id] = g;
+}
+
+// ==========================================================================
+// Viewport, Zoom, Pan & Drag Stabilization
+// ==========================================================================
+let vb = null;
+const VIEWS = {
+  v1: [-25.535, -54.700, -25.59, -54.62],
+  v2: [-25.50, -54.72, -25.60, -54.58],
+  v3: [-25.45, -54.77, -25.67, -54.58]
+};
+
+// Reasonable Zoom Clamping Limits (km width)
+const MIN_VIEW_WIDTH = 0.55;  // Max zoom in
+const MAX_VIEW_WIDTH = 55.0;  // Max zoom out
+
+function setView(b) {
+  const [x1, y1] = px(b[0], b[1]), [x2, y2] = px(b[2], b[3]);
+  vb = [Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1)];
+  fit();
+}
+
+function fit() {
+  const r = svg.getBoundingClientRect();
+  const ar = r.width / r.height;
+  let [x, y, w, h] = vb;
+  if (w / h < ar) {
+    const nw = h * ar;
+    x -= (nw - w) / 2;
+    w = nw;
+  } else {
+    const nh = w / ar;
+    y -= (nh - h) / 2;
+    h = nh;
+  }
+  svg.setAttribute('viewBox', [x, y, w, h].map(v => v.toFixed(4)).join(' '));
+  scaleLabels(w);
+}
+
+function scaleLabels(w) {
+  const s = w / 9;
+  gLbl.querySelectorAll('text').forEach(t => t.setAttribute('font-size', (0.22 * s).toFixed(3)));
+  gLbl.querySelectorAll('circle').forEach(c => c.setAttribute('r', (0.06 * s).toFixed(3)));
+  gMk.querySelectorAll('text').forEach(t => t.setAttribute('font-size', (0.32 * s).toFixed(3)));
+  gMk.querySelectorAll('circle').forEach(c => {
+    const base = +c.dataset.base || (c.dataset.base = c.getAttribute('r'));
+    c.setAttribute('r', (base * Math.max(0.48, Math.min(1.5, s))).toFixed(3));
+  });
+}
+
+function zoom(factor, cx, cy) {
+  const [x, y, w, h] = svg.getAttribute('viewBox').split(' ').map(Number);
+  let nw = w * factor;
+  let nh = h * factor;
+
+  // Zoom Clamping
+  if (nw < MIN_VIEW_WIDTH) {
+    factor = MIN_VIEW_WIDTH / w;
+    nw = MIN_VIEW_WIDTH;
+    nh = h * factor;
+  } else if (nw > MAX_VIEW_WIDTH) {
+    factor = MAX_VIEW_WIDTH / w;
+    nw = MAX_VIEW_WIDTH;
+    nh = h * factor;
+  }
+
+  const px0 = cx ?? x + w / 2;
+  const py0 = cy ?? y + h / 2;
+  vb = [px0 - (px0 - x) * factor, py0 - (py0 - y) * factor, nw, nh];
+  svg.setAttribute('viewBox', vb.map(v => v.toFixed(4)).join(' '));
+  scaleLabels(nw);
+}
+
+document.getElementById('zin').onclick = () => zoom(0.72);
+document.getElementById('zout').onclick = () => zoom(1 / 0.72);
+document.getElementById('reset-view').onclick = () => {
+  document.querySelectorAll('.map-toolbar button').forEach(b => b.classList.remove('active'));
+  document.getElementById('v1').classList.add('active');
+  setView(VIEWS.v1);
+};
+
+for (const k in VIEWS) {
+  document.getElementById(k).onclick = e => {
+    document.querySelectorAll('.map-toolbar button').forEach(b => b.classList.remove('active'));
+    e.currentTarget.classList.add('active');
+    setView(VIEWS[k]);
+  };
+}
+
+// Wheel zoom
+svg.addEventListener('wheel', e => {
+  e.preventDefault();
+  const p = svgPt(e);
+  zoom(e.deltaY > 0 ? 1.15 : 1 / 1.15, p.x, p.y);
+}, { passive: false });
+
+function svgPt(e) {
+  const pt = svg.createSVGPoint();
+  pt.x = e.clientX;
+  pt.y = e.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+// Pointer drag stabilization
+let drag = null;
+let wasDragging = false;
+
+svg.addEventListener('pointerdown', e => {
+  drag = {
+    startX: e.clientX,
+    startY: e.clientY,
+    vb: svg.getAttribute('viewBox').split(' ').map(Number),
+    moved: false
+  };
+  svg.setPointerCapture(e.pointerId);
+});
+
+svg.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const dist = Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY);
+  if (dist > 4) {
+    drag.moved = true;
+    svg.classList.add('drag');
+  }
+  if (!drag.moved) return;
+
+  const r = svg.getBoundingClientRect();
+  const [x, y, w, h] = drag.vb;
+  const dx = (e.clientX - drag.startX) / r.width * w;
+  const dy = (e.clientY - drag.startY) / r.height * h;
+  vb = [x - dx, y - dy, w, h];
+  svg.setAttribute('viewBox', vb.map(v => v.toFixed(4)).join(' '));
+});
+
+const endDrag = () => {
+  if (drag) {
+    wasDragging = drag.moved;
+    setTimeout(() => { wasDragging = false; }, 80);
+  }
+  svg.classList.remove('drag');
+  drag = null;
+};
+
+svg.addEventListener('pointerup', endDrag);
+svg.addEventListener('pointercancel', endDrag);
+
+window.addEventListener('resize', () => { if (vb) fit(); });
+
+// ==========================================================================
+// Application State, Filtering & Synchronization
+// ==========================================================================
+const state = {
+  q: '',
+  serie: '',
+  prec: '',
+  status: 'comparavel', // 'comparavel' (default), 'todos', 'descartado', 'fora_do_eixo', 'sem_preco'
+  max: Infinity,        // 'sem limite' has no hidden cap
+  groups: new Set(['ALVO', 'A', 'A2', 'B', 'GL1-5', 'GL5-20']),
+  sort: 'usdm2',
+  dir: 1,
+  sel: null
+};
+
+const fmt = n => n == null ? '–' : n.toLocaleString('pt-BR');
+
+// Transparent Valuation Tag Generator
+function renderValuationTag(r) {
+  if (r.id === 'ALVO-A') {
+    return `<span class="avaliacao-badge acima" title="Conclusão qualitativa contida no relatório técnico de campo, não calculada automaticamente pela aplicação">Avaliação do relatório: acima do mercado</span>`;
+  }
+  if (r.id === 'ALVO-B') {
+    return `<span class="avaliacao-badge abaixo" title="Conclusão qualitativa contida no relatório técnico de campo, não calculada automaticamente pela aplicação">Avaliação do relatório: abaixo do mercado (gleba grande)</span>`;
+  }
+  return '';
+}
+
+// Filter dataset according to multi-dimensional criteria
+function visible() {
+  return DATA.filter(r => {
+    // 1. Group filtering
+    const g = grpOf(r);
+    if (!state.groups.has(g)) return false;
+
+    // 2. Serie filtering
+    if (state.serie) {
+      if (state.serie === 'alvo' && r.grupo !== 'ALVO') return false;
+      if (state.serie === 'A' && !r.serie.startsWith('A')) return false;
+      if (state.serie === 'B' && !r.serie.startsWith('B')) return false;
+    }
+
+    // 3. Precision filtering
+    if (state.prec === 'ex' && !isEx(r)) return false;
+    if (state.prec === 'ap' && isEx(r)) return false;
+
+    // 4. Status filtering (Requirement 1: Descartados hidden by default)
+    if (state.status === 'comparavel' && r.status !== 'comparavel') return false;
+    if (state.status === 'descartado' && r.status !== 'descartado') return false;
+    if (state.status === 'fora_do_eixo' && r.status !== 'fora_do_eixo') return false;
+    if (state.status === 'sem_preco' && r.status !== 'sem_preco') return false;
+
+    // 5. Price filter (Requirement 4: Applies to ALL properties including ALVO, sem limite = Infinity)
+    if (state.max !== Infinity) {
+      if (r.usdm2 == null) {
+        if (state.status !== 'todos' && state.status !== 'sem_preco') return false;
+      } else if (r.usdm2 > state.max) {
+        return false;
+      }
+    }
+
+    // 6. Text query
+    if (state.q) {
+      const s = (r.id + ' ' + r.titulo + ' ' + r.local + ' ' + r.portal + ' ' + r.ref + ' ' + (r.obs || '') + ' ' + (r.motivo_descarte || '')).toLowerCase();
+      if (!s.includes(state.q)) return false;
+    }
+
+    return true;
+  });
+}
+
+// Render Table, KPI stats and Synchronize Selection
+function render() {
+  const v = visible();
+  const k = state.sort;
+
+  // Sorting
+  v.sort((a, b) => {
+    if (a.grupo === 'ALVO' && b.grupo !== 'ALVO') return -1;
+    if (b.grupo === 'ALVO' && a.grupo !== 'ALVO') return 1;
+    const x = a[k] ?? (state.dir === 1 ? 1e9 : -1e9);
+    const y = b[k] ?? (state.dir === 1 ? 1e9 : -1e9);
+    return (x > y ? 1 : x < y ? -1 : 0) * state.dir;
+  });
+
+  // Map markers display sync
+  const ids = new Set(v.map(r => r.id));
+  for (const id in marks) {
+    marks[id].style.display = ids.has(id) ? '' : 'none';
+  }
+
+  // Requirement 5: Synchronize selection and filters
+  if (state.sel && !ids.has(state.sel)) {
+    state.sel = null;
+    document.querySelectorAll('.mk').forEach(m => m.classList.remove('sel'));
+    document.getElementById('detail').innerHTML = `
+      <div class="detail-empty">
+        <span>⚠️ O terreno anteriormente selecionado foi ocultado pelos filtros ativos. Selecione outro imóvel no mapa ou na tabela.</span>
+      </div>`;
+  }
+
+  // Render Table Rows
+  const tbody = document.getElementById('tb');
+  tbody.innerHTML = v.map(r => {
+    const isSelected = state.sel === r.id;
+    const valTag = renderValuationTag(r);
+
+    return `
+      <tr data-id="${r.id}" class="${isSelected ? 'sel' : ''}" tabindex="0" role="row" aria-label="Terreno ${r.id}, ${r.titulo}">
+        <td class="num">
+          <span class="legend-dot" style="display:inline-block; vertical-align:middle; margin-right:4px; background:${colOf(r)}"></span>
+          <strong>${r.id}</strong>
+        </td>
+        <td>
+          <div style="font-weight:600;">${r.titulo}</div>
+          <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:3px; align-items:center;">
+            ${valTag}
+            ${r.status === 'descartado' ? `<span class="tag discard" title="${r.motivo_descarte}">🚫 Descartado: ${r.motivo_descarte}</span>` : ''}
+            ${r.sameAs ? `<span class="tag dup" title="Mesmo imóvel registrado como ${r.sameAs}">🔗 Duplicata de ${r.sameAs}</span>` : ''}
+            ${r.discrepancia_area ? `<span class="tag warn" title="${r.discrepancia_area}">⚠️ 3.877 vs 3.887 m²</span>` : ''}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">
+            ${r.portal}${r.ref ? ' · ref ' + r.ref : ''} · ${r.preco_txt} · ${r.data}
+          </div>
+        </td>
+        <td class="r num">${fmt(r.m2)}</td>
+        <td class="r num" style="font-weight:600;">${r.usdm2 == null ? '–' : r.usdm2.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</td>
+        <td class="r num">${r.dA}</td>
+        <td class="r num">${r.dB}</td>
+        <td>
+          <span class="tag ${isEx(r) ? 'exact' : 'aprox'}">${isEx(r) ? 'pino informado' : 'aprox.'}</span>
+        </td>
+        <td>
+          <a href="${r.maps}" target="_blank" rel="noopener">Maps</a> ·
+          <a href="${r.maps_sat}" target="_blank" rel="noopener">Satélite</a>
+          ${r.link ? ` · <a href="${r.link}" target="_blank" rel="noopener">Anúncio</a>` : ''}
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // Row selection event listeners (click + keyboard)
+  tbody.querySelectorAll('tr').forEach(tr => {
+    tr.addEventListener('click', e => {
+      if (e.target.tagName === 'A' || e.target.closest('a')) return;
+      select(tr.dataset.id, false);
+    });
+    tr.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        select(tr.dataset.id, false);
+      }
+    });
+  });
+
+  // Calculate KPIs
+  const totalRecs = v.length;
+  const uniqueProps = new Set(v.map(r => r.propId)).size;
+  const exactCount = v.filter(isEx).length;
+  const pricedItems = v.filter(r => r.usdm2 != null);
+  const avgUsdM2 = pricedItems.length > 0 ? (pricedItems.reduce((acc, r) => acc + r.usdm2, 0) / pricedItems.length) : 0;
+  const totalM2 = v.reduce((acc, r) => acc + (r.m2 || 0), 0);
+
+  document.getElementById('kpi-records').textContent = totalRecs;
+  document.getElementById('kpi-unique').textContent = uniqueProps;
+  document.getElementById('kpi-exact').textContent = exactCount;
+  document.getElementById('kpi-exact-pct').textContent = totalRecs > 0 ? ((exactCount / totalRecs) * 100).toFixed(0) + '%' : '0%';
+  document.getElementById('kpi-avg-price').textContent = avgUsdM2.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  document.getElementById('kpi-total-area').textContent = (totalM2 / 10000).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  document.getElementById('kpi-m2-sum').textContent = fmt(totalM2);
+
+  // Update table header sort indicators & aria-sort
+  document.querySelectorAll('th[data-k]').forEach(th => {
+    const isCurrent = th.dataset.k === state.sort;
+    th.setAttribute('aria-sort', isCurrent ? (state.dir === 1 ? 'ascending' : 'descending') : 'none');
+    const icon = th.querySelector('.sort-icon');
+    if (icon) icon.textContent = isCurrent ? (state.dir === 1 ? ' ↑' : ' ↓') : '';
+  });
+
+  // Update dynamic chip counts
+  const catCounts = {};
+  for (const r of v) {
+    const g = grpOf(r);
+    catCounts[g] = (catCounts[g] || 0) + 1;
+  }
+  ['ALVO', 'A', 'A2', 'B', 'C', 'GL1-5', 'GL5-20'].forEach(g => {
+    const el = document.getElementById('cnt-' + g);
+    if (el) el.textContent = '(' + (catCounts[g] || 0) + ')';
+  });
+}
+
+// Select Terrain & Display Rich Detail Card
+function select(id, scrollTable) {
+  state.sel = id;
+  const r = DATA.find(x => x.id === id);
+  if (!r) return;
+
+  // Highlight marker & table row
+  document.querySelectorAll('.mk').forEach(m => m.classList.toggle('sel', m.dataset.id === id));
+  document.querySelectorAll('#tb tr').forEach(tr => tr.classList.toggle('sel', tr.dataset.id === id));
+
+  if (scrollTable) {
+    const tr = document.querySelector(`#tb tr[data-id="${id}"]`);
+    if (tr) {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      tr.scrollIntoView({ block: 'nearest', behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+    }
+  }
+
+  const detailEl = document.getElementById('detail');
+  const valTag = renderValuationTag(r);
+
+  detailEl.innerHTML = `
+    <div class="detail-header">
+      <h3 class="detail-title">
+        <span class="legend-dot" style="background:${colOf(r)}"></span>
+        <span class="detail-badge-id">${r.id}</span>
+        ${r.titulo}
+      </h3>
+      ${valTag}
+    </div>
+
+    ${r.discrepancia_area ? `
+      <div class="detail-alert alert-warn">
+        <span>⚠️ <strong>Inconsistência de Superfície Pendente de Confirmação:</strong> ${r.discrepancia_area}. O cálculo preserva o valor cadastral até apresentação de escritura.</span>
+      </div>` : ''}
+
+    ${r.status === 'descartado' ? `
+      <div class="detail-alert alert-discard">
+        <span>🚫 <strong>Imóvel Descartado para o Projeto:</strong> ${r.motivo_descarte}.</span>
+      </div>` : ''}
+
+    ${r.sameAs ? `
+      <div class="detail-alert alert-dup">
+        <span>🔗 <strong>Registro Duplicado Confirmado:</strong> Esta propriedade também está cadastrada como <strong>${r.sameAs}</strong> (mesma localização, área e valor).
+        <button type="button" class="btn" style="padding:2px 7px; font-size:0.7rem; margin-left:6px;" onclick="select('${r.sameAs}', true)">Ver registro ${r.sameAs}</button></span>
+      </div>` : ''}
+
+    <div class="detail-grid">
+      <div class="detail-metric">
+        <div class="detail-metric-lbl">Área Informada</div>
+        <div class="detail-metric-val num">${fmt(r.m2)} m² <span style="font-size:0.75rem; font-weight:normal; color:var(--text-muted);">(${(r.m2/10000).toFixed(2)} ha)</span></div>
+      </div>
+      <div class="detail-metric">
+        <div class="detail-metric-lbl">Valor de Oferta</div>
+        <div class="detail-metric-val num">${r.preco_txt}</div>
+      </div>
+      <div class="detail-metric">
+        <div class="detail-metric-lbl">Valor Unitário</div>
+        <div class="detail-metric-val num" style="color:var(--alvo-a);">${r.usdm2 != null ? 'USD ' + r.usdm2.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '/m²' : 'Sem preço'}</div>
+      </div>
+      <div class="detail-metric">
+        <div class="detail-metric-lbl">Distâncias</div>
+        <div class="detail-metric-val num">${r.dA} km <span style="font-size:0.7rem; color:var(--text-muted);">(Alvo A)</span> · ${r.dB} km <span style="font-size:0.7rem; color:var(--text-muted);">(Alvo B)</span></div>
+      </div>
+    </div>
+
+    <div style="font-size:0.78rem; color:var(--text-muted); margin-top:6px;">
+      📍 <strong>Local:</strong> ${r.local} ·
+      <span class="tag ${isEx(r) ? 'exact' : 'aprox'}">Posição: ${r.prec.replace(/exata/g, 'pino informado no anúncio/Maps')}</span> ·
+      <span class="num">${r.lat.toFixed(6)}, ${r.lon.toFixed(6)}</span>
+      ${r.obs ? ' · <em>Observação: ' + r.obs + '</em>' : ''}
+    </div>
+
+    <div class="detail-links">
+      <a class="btn" style="background:var(--text-main); color:var(--bg-card);" href="${r.maps}" target="_blank" rel="noopener">🗺️ Abrir no Google Maps</a>
+      <a class="btn" href="${r.maps_sat}" target="_blank" rel="noopener">🛰️ Vista de Satélite</a>
+      ${r.link ? `<a class="btn" href="${r.link}" target="_blank" rel="noopener">🌐 Ver Anúncio Original</a>` : ''}
+      <button type="button" class="btn" id="cp">📋 Copiar Coordenada</button>
+    </div>
+  `;
+
+  document.getElementById('cp').onclick = ev => {
+    const s = r.lat.toFixed(6) + ', ' + r.lon.toFixed(6);
+    navigator.clipboard.writeText(s).then(() => {
+      ev.target.textContent = '✅ Coordenada Copiada!';
+      setTimeout(() => { ev.target.textContent = '📋 Copiar Coordenada'; }, 2000);
+    });
+  };
+}
+
+// ==========================================================================
+// Filter Event Handlers
+// ==========================================================================
+document.getElementById('q').addEventListener('input', e => {
+  state.q = e.target.value.trim().toLowerCase();
+  render();
+});
+
+document.getElementById('serie').addEventListener('change', e => {
+  state.serie = e.target.value;
+  render();
+});
+
+document.getElementById('prec').addEventListener('change', e => {
+  state.prec = e.target.value;
+  render();
+});
+
+document.getElementById('status-filter').addEventListener('change', e => {
+  state.status = e.target.value;
+  render();
+});
+
+// Price filter (Requirement 4: 1100 = real Infinity / Sem Limite)
+const mx = document.getElementById('max');
+const mxv = document.getElementById('maxv');
+const showMax = () => {
+  if (state.max >= 1100) {
+    mxv.textContent = '(sem limite)';
+    state.max = Infinity;
+  } else {
+    mxv.textContent = 'USD ' + state.max + '/m²';
+  }
+};
+
+mx.addEventListener('input', e => {
+  const val = +e.target.value;
+  state.max = val >= 1100 ? Infinity : val;
+  showMax();
+  render();
+});
+showMax();
+
+// Category Chips
+document.querySelectorAll('.chip').forEach(c => {
+  c.addEventListener('click', () => {
+    const g = c.dataset.g;
+    c.classList.toggle('on');
+    if (c.classList.contains('on')) {
+      state.groups.add(g);
+    } else {
+      state.groups.delete(g);
+    }
+    render();
+  });
+});
+
+// Table Headers Sorting
+document.querySelectorAll('th[data-k]').forEach(th => {
+  th.querySelector('button').addEventListener('click', () => {
+    const k = th.dataset.k;
+    if (state.sort === k) {
+      state.dir *= -1;
+    } else {
+      state.sort = k;
+      state.dir = 1;
+    }
+    render();
+  });
+});
+
+// Theme switcher
+const themeToggle = document.getElementById('theme-toggle');
+themeToggle.addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+});
+
+// Initial boot
+setView(VIEWS.v1);
+render();
+select('ALVO-A', false);
+</script>
+
+</body>
+</html>
